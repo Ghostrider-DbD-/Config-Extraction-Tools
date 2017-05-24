@@ -1,0 +1,143 @@
+version=53;
+class EditorData
+{
+	moveGridStep=1;
+	angleGridStep=0.2617994;
+	scaleGridStep=1;
+	autoGroupingDist=10;
+	toggles=1;
+	class ItemIDProvider
+	{
+		nextID=3;
+	};
+	class Camera
+	{
+		pos[]={44081.895,20,-9231.0098};
+		dir[]={-0.00050094543,0,1};
+		up[]={0,1,0};
+		aside[]={1,0,0.00050094543};
+	};
+};
+binarizationWanted=0;
+addons[]=
+{
+	"A3_Characters_F_Exp",
+	"A3_Soft_F_Exp_Offroad_01"
+};
+class AddonsMetaData
+{
+	class List
+	{
+		items=2;
+		class Item0
+		{
+			className="A3_Characters_F_Exp";
+			name="Arma 3 Apex - Characters and Clothing";
+			author="Bohemia Interactive";
+			url="https://www.arma3.com";
+		};
+		class Item1
+		{
+			className="A3_Soft_F_Exp";
+			name="Arma 3 Apex - Unarmored Land Vehicles";
+			author="Bohemia Interactive";
+			url="https://www.arma3.com";
+		};
+	};
+};
+randomSeed=14371957;
+class ScenarioData
+{
+	author="GhostRider=DbD=";
+};
+class Mission
+{
+	class Intel
+	{
+		timeOfChanges=1800.0002;
+		startWeather=0.30000001;
+		startWind=0.1;
+		startWaves=0.1;
+		forecastWeather=0.30000001;
+		forecastWind=0.1;
+		forecastWaves=0.1;
+		forecastLightnings=0.1;
+		year=2035;
+		month=6;
+		day=24;
+		hour=12;
+		minute=0;
+		startFogDecay=0.014;
+		forecastFogDecay=0.014;
+	};
+	class Entities
+	{
+		items=2;
+		class Item0
+		{
+			dataType="Group";
+			side="West";
+			class Entities
+			{
+				items=1;
+				class Item0
+				{
+					dataType="Object";
+					class PositionInfo
+					{
+						position[]={15192.831,17.911438,16745.836};
+					};
+					side="West";
+					flags=6;
+					class Attributes
+					{
+						isPlayer=1;
+					};
+					id=2;
+					type="B_GEN_Commander_F";
+				};
+			};
+			class Attributes
+			{
+			};
+			class CrewLinks
+			{
+				class LinkIDProvider
+				{
+					nextID=1;
+				};
+				class Links
+				{
+					items=1;
+					class Item0
+					{
+						linkID=0;
+						item0=2;
+						item1=1;
+						class CustomData
+						{
+							role=1;
+						};
+					};
+				};
+			};
+			id=0;
+		};
+		class Item1
+		{
+			dataType="Object";
+			class PositionInfo
+			{
+				position[]={15192.831,19.521503,16745.816};
+			};
+			side="West";
+			flags=6;
+			class Attributes
+			{
+				aiRadarUsage=-861312960;
+			};
+			id=1;
+			type="B_GEN_Offroad_01_gen_F";
+		};
+	};
+};
