@@ -10,10 +10,8 @@
 
 _baseMagazines = [];
 #include "baseMagazines.sqf"
-//systemChat format["%1%2 end",_baseUniforms,endl];
-//uiSleep 5;
 _veh = (configfile >> "CfgMagazines") call BIS_fnc_getCfgSubClasses;
-_veh sort true;
+//_veh sort true;
 systemChat format[" _veh contains %1 entries",count _veh];
 _cars = [];
 _clipboard = "";

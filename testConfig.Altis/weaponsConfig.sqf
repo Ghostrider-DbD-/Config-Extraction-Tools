@@ -30,7 +30,7 @@ _wpnUnknown = []; //Misc
 
 _aBaseNames = [];
 _wpList = (configFile >> "cfgWeapons") call BIS_fnc_getCfgSubClasses;
-_wpList sort true;
+//_wpList sort true;
 {
 	_item = _x;
 	_isWeap = false;

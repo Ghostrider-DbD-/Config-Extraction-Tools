@@ -11,7 +11,7 @@
 _vehiclesBase = [];
 #include "vehiclesBase.sqf"
 _veh = (configfile >> "CfgVehicles") call BIS_fnc_getCfgSubClasses;
-_veh sort true;
+//_veh sort true;
 systemChat format[" _veh contains %1 entries",count _veh];
 _index = 0;
 _cars = [];
@@ -32,7 +32,5 @@ _clipboard = "";
 		_clipboard = _clipboard + format['"%1",%2',_x,endl];
 	};
 }forEach _veh;
-systemChat format["number of type of Car_F = %1", _index];
-systemChat format["number of Exile cars = %1",_exile];
 
 copyToClipboard _clipboard;
