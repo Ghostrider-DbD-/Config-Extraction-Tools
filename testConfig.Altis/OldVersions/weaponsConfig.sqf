@@ -2,7 +2,7 @@
 	Original script by KiloSwiss
 	https://epochmod.com/forum/topic/32239-howto-get-available-weapons-mod-independent/
 	Modified and enhanced by GhostriderDbD
-	5/22/17
+	7/20/17
 	
 	All the code and information provided here is provided under an Attribution Non-Commercial ShareAlike 4.0 Commons License.
 
@@ -27,6 +27,10 @@ _wpnShotGun = []; //Shotguns
 _wpnThrow = []; // throwables
 _wpnUnknown = []; //Misc
 
+_wpnMagazines = [];
+_wpnOptics = [];
+_wpnPointers = [];
+_wpnMuzzles = [];
 
 _aBaseNames = [];
 _wpList = (configFile >> "cfgWeapons") call BIS_fnc_getCfgSubClasses;
@@ -67,143 +71,111 @@ _wpList sort true;
 					case "Throw" : {_wpnThrow pushBack _baseName};
 					default{_wpnUnknown pushBack _baseName};
 					};
+	
+					//  Get options for magazines and attachments for that weapon and store these if they are not duplicates for items already listed.
+					_ammoChoices = getArray (configFile >> "CfgWeapons" >> _baseName >> "magazines");
+					{
+						if !(_x in _wpnMagazines) then {_wpnMagazines pushback _x};
+					}forEach _ammoChoices;
+					_optics = getArray (configfile >> "CfgWeapons" >> _baseName >> "WeaponSlotsInfo" >> "CowsSlot" >> "compatibleItems");
+					{
+						if !(_x in _wpnOptics) then {_wpnOptics pushback _x};
+					}forEach _optics;
+					_pointers = getArray (configFile >> "CfgWeapons" >> _baseName >> "WeaponSlotsInfo" >> "PointerSlot" >> "compatibleItems");
+					{
+						if !(_x in _wpnPointers) then {_wpnPointers pushback _x};
+					}forEach _pointers;
+					_muzzles = getArray (configFile >> "CfgWeapons" >> _baseName >> "WeaponSlotsInfo" >> "MuzzleSlot" >> "compatibleItems");
+					{
+						if !(_x in _wpnMuzzles) then {_wpnMuzzles pushback _x};
+					}forEach _muzzles;
+					_underbarrel = getArray (configFile >> "CfgWeapons" >> _baseName >> "WeaponSlotsInfo" >> "UnderBarrelSlot" >> "compatibleItems");
+					{
+						if !(_x in _wpnUnderbarrel) then {_wpnUnderbarrel pushback _x};
+					}forEach _underbarrel;
 				};
 			};
-		//};
 	};
 } foreach _wpList;
 
 _clipBoard = format["%2%3// // Assault Rifles %1",endl,endl,endl];
 {
-		if (DBD_priceConfiguration == "Exile") then 
-		{
-			_clipboard = _clipboard + format["class %1 { quality = 3; price = 150; };%2",_x,endl];
-		};
-		if (DBD_priceConfiguration == "Epoch") then 
-		{
-			_clipboard = _clipboard + format["class %1 { price = 150; };%2",_x,endl];
-		};		
+	_clipBoard = _clipBoard + format['"%1%",%2',_x,endl];
 }forEach _wpnAR;
 
 _clipBoard = _clipBoard + format["%2%3// Assault Rifles with GL %1",endl,endl,endl];
 {
-		if (DBD_priceConfiguration == "Exile") then 
-		{
-			_clipboard = _clipboard + format["class %1 { quality = 3; price = 150; };%2",_x,endl];
-		};
-		if (DBD_priceConfiguration == "Epoch") then 
-		{
-			_clipboard = _clipboard + format["class %1 { price = 150; };%2",_x,endl];
-		};		
+	_clipBoard = _clipBoard + format['"%1%",%2',_x,endl]
 }forEach _wpnARG;
 
 _clipBoard = _clipBoard + format["%2%3// LMGs %1",endl,endl,endl];
 {
-		if (DBD_priceConfiguration == "Exile") then 
-		{
-			_clipboard = _clipboard + format["class %1 { quality = 3; price = 150; };%2",_x,endl];
-		};
-		if (DBD_priceConfiguration == "Epoch") then 
-		{
-			_clipboard = _clipboard + format["class %1 { price = 150; };%2",_x,endl];
-		};		
+	_clipBoard = _clipBoard + format['"%1%",%2',_x,endl]
 }forEach _wpnLMG;
 
 _clipBoard = _clipBoard + format["%2%3// SMGs %1",endl,endl,endl];
 {
-		if (DBD_priceConfiguration == "Exile") then 
-		{
-			_clipboard = _clipboard + format["class %1 { quality = 3; price = 150; };%2",_x,endl];
-		};
-		if (DBD_priceConfiguration == "Epoch") then 
-		{
-			_clipboard = _clipboard + format["class %1 { price = 150; };%2",_x,endl];
-		};		
+	_clipBoard = _clipBoard + format['"%1%",%2',_x,endl]
 }forEach _wpnSMG;
 
 _clipBoard = _clipBoard + format["%2%3// Snipers %1",endl,endl,endl];
 {
-		if (DBD_priceConfiguration == "Exile") then 
-		{
-			_clipboard = _clipboard + format["class %1 { quality = 3; price = 150; };%2",_x,endl];
-		};
-		if (DBD_priceConfiguration == "Epoch") then 
-		{
-			_clipboard = _clipboard + format["class %1 { price = 150; };%2",_x,endl];
-		};		
+	_clipBoard = _clipBoard + format['"%1%",%2',_x,endl]
 }forEach _wpnSniper;
 
 _clipBoard = _clipBoard + format["%2%3// DMRs %1",endl,endl,endl];
 {
-		if (DBD_priceConfiguration == "Exile") then 
-		{
-			_clipboard = _clipboard + format["class %1 { quality = 3; price = 150; };%2",_x,endl];
-		};
-		if (DBD_priceConfiguration == "Epoch") then 
-		{
-			_clipboard = _clipboard + format["class %1 { price = 150; };%2",_x,endl];
-		};		
+	_clipBoard = _clipBoard + format['"%1%",%2',_x,endl]
 }forEach _wpnDMR;
 
 _clipBoard = _clipBoard + format["%2%3// Launchers %1",endl,endl,endl];
 {
-		if (DBD_priceConfiguration == "Exile") then 
-		{
-			_clipboard = _clipboard + format["class %1 { quality = 3; price = 150; };%2",_x,endl];
-		};
-		if (DBD_priceConfiguration == "Epoch") then 
-		{
-			_clipboard = _clipboard + format["class %1 { price = 150; };%2",_x,endl];
-		};		
+	_clipBoard = _clipBoard + format['"%1%",%2',_x,endl]
 }forEach _wpnLauncher;
 
 _clipBoard = _clipBoard + format["%2%3// Handguns %1",endl,endl,endl];
 {
-		if (DBD_priceConfiguration == "Exile") then 
-		{
-			_clipboard = _clipboard + format["class %1 { quality = 3; price = 150; };%2",_x,endl];
-		};
-		if (DBD_priceConfiguration == "Epoch") then 
-		{
-			_clipboard = _clipboard + format["class %1 { price = 150; };%2",_x,endl];
-		};		
+	_clipBoard = _clipBoard + format['"%1%",%2',_x,endl]
 }forEach _wpnHandGun;
 
 _clipBoard = _clipBoard + format["%2%3// Shotguns %1",endl,endl,endl];
 {
-		if (DBD_priceConfiguration == "Exile") then 
-		{
-			_clipboard = _clipboard + format["class %1 { quality = 3; price = 150; };%2",_x,endl];
-		};
-		if (DBD_priceConfiguration == "Epoch") then 
-		{
-			_clipboard = _clipboard + format["class %1 { price = 150; };%2",_x,endl];
-		};		
+	_clipBoard = _clipBoard + format['"%1%",%2',_x,endl]
 }forEach _wpnShotGun;
 
 _clipBoard = _clipBoard + format["%2%3// Throwables %1",endl,endl,endl];
 {
-		if (DBD_priceConfiguration == "Exile") then 
-		{
-			_clipboard = _clipboard + format["class %1 { quality = 3; price = 150; };%2",_x,endl];
-		};
-		if (DBD_priceConfiguration == "Epoch") then 
-		{
-			_clipboard = _clipboard + format["class %1 { price = 150; };%2",_x,endl];
-		};		
+	_clipBoard = _clipBoard + format['"%1%",%2',_x,endl]
 }forEach _wpnThrow;
 
 _clipBoard = _clipBoard + format["%2%3// Unknown %1",endl,endl,endl];
 {
-		if (DBD_priceConfiguration == "Exile") then 
-		{
-			_clipboard = _clipboard + format["class %1 { quality = 3; price = 150; };%2",_x,endl];
-		};
-		if (DBD_priceConfiguration == "Epoch") then 
-		{
-			_clipboard = _clipboard + format["class %1 { price = 150; };%2",_x,endl];
-		};		
+	_clipBoard = _clipBoard + format['"%1%",%2',_x,endl]
 }forEach _wpnUnknown;
 
+_clipBoard = _clipBoard + format["%2%3// Magazines %1",endl,endl,endl];
+{
+	_clipBoard = _clipBoard + format['"%1%",%2',_x,endl]
+}forEach _wpnMagazines;
+
+_clipBoard = _clipBoard + format["%2%3// Optics %1",endl,endl,endl];
+{
+	_clipBoard = _clipBoard + format['"%1%",%2',_x,endl]
+}forEach _wpnOptics;
+
+_clipBoard = _clipBoard + format["%2%3// Muzzles %1",endl,endl,endl];
+{
+	_clipBoard = _clipBoard + format['"%1%",%2',_x,endl]
+}forEach _wpnMuzzles;
+
+_clipBoard = _clipBoard + format["%2%3// Pointers %1",endl,endl,endl];
+{
+	_clipBoard = _clipBoard + format['"%1%",%2',_x,endl]
+}forEach _wpnPointers;
+
+_clipBoard = _clipBoard + format["%2%3// Underbarrel %1",endl,endl,endl];
+{
+	_clipBoard = _clipBoard + format['"%1%",%2',_x,endl]
+}forEach _wpnUnderbarrel;
+
 copyToClipboard _clipBoard;
-systemChat "Weapon Pricelist Generated";

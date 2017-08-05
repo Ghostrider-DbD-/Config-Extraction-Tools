@@ -15,7 +15,7 @@ _veh sort true;
 _cars = [];
 _clipboard = "";
 {
-	if (_x isKindOf "Car" && !(_x in _vehiclesBase)) then
+	if (_x isKindOf "Air" && !(_x in _vehiclesBase)) then
 	{
 		_cars pushback _x;
 		if (DBD_priceConfiguration == "Exile") then 

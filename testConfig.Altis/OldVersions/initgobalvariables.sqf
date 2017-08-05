@@ -9,19 +9,10 @@
 */
 
 // load string library
-//nul=[] execVM "KRON_Strings.sqf";
-GRG_mod = "Exile";  // Options are "Exile" or "Epoch".  This configuration pertains only to generating pre-formated price lists.
-GRG_includedWeaponMagazines = false;
-GRG_configuratorPathName = "ExcludedClassNames\";
+nul=[] execVM "KRON_Strings.sqf";
+DBD_priceConfiguration = "Exile";  // Options are "Exile" or "Epoch".  This configuration pertains only to generating pre-formated price lists.
+DBD_includedWeaponMagazines = false;
 
-#include "code\variables.sqf";
-#include "code\functions.sqf";
-
-player addAction ["Vehicles","vehicles.sqf", [], 9];
-player addAction ["Weapons","weapons.sqf",[], 8.9];
-player addAction ["Magazines","magazines.sqf", 8.7];
-player addAction ["Wearables","wearables.sqf", 8.8];
-/*
 player addAction["Run vehiclesConfig","vehiclesConfig.sqf"];
 player addAction["Run vehiclesPricelist","vehiclesPriceList.sqf"];
 player addAction["Run airConfig","airConfig.sqf"];
@@ -39,7 +30,4 @@ player addAction["Run vestsConfig","vestsConfig.sqf"];
 player addAction["Run vestsPriceList","vestsPriceList.sqf"];
 player addAction["Run uniformsConfig","uniformsConfig.sqf"];
 player addAction["Run uniformsPriceList","uniformsPriceList.sqf"];
-
-
-
 
