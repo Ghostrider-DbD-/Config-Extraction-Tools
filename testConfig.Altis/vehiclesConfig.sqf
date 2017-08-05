@@ -15,22 +15,41 @@ _veh = (configfile >> "CfgVehicles") call BIS_fnc_getCfgSubClasses;
 systemChat format[" _veh contains %1 entries",count _veh];
 _index = 0;
 _cars = [];
+_boats = [];
+_air = [];
 _exile = 0;
 _clipboard = "";
 {
 	if (_x isKindOf "Car" && !(_x in _vehiclesBase)) then
 	{
 		_cars pushback _x;
-		diag_log format["%1",_x];
-		_index = _index + 1;
-		_left = [_x,5] call KRON_StrLeft;
-		if (_left in ["Exile"]) then {
-			_exile = _exile + 1; 
-			systemChat format["%1",_x];
-			
-		};
-		_clipboard = _clipboard + format['"%1",%2',_x,endl];
+		//diag_log format["%1",_x];
+		//_clipboard = _clipboard + format['"%1",%2',_x,endl];
 	};
+	if (_x isKindOf "Air" && !(_x in _vehiclesBase)) then
+	{
+		_cars pushback _x;
+		//diag_log format["%1",_x];
+		//_clipboard = _clipboard + format['"%1",%2',_x,endl];
+	};
+	if (_x isKindOf "Boat" && !(_x in _vehiclesBase)) then
+	{
+		_air pushback _x;
+		//diag_log format["%1",_x];
+		//_clipboard = _clipboard + format['"%1",%2',_x,endl];
+	};	
 }forEach _veh;
 
+_clipboard = _clipboard + format["// Cars%1%2",endl,endl,endl];
+{
+	_clipBoard = _clipBoard + format['"%1%",%2',_x,endl]
+}forEach _cars;
+_clipboard = _clipboard + format["%1// Boats%2%3",endl,endl,endl];
+{
+	_clipBoard = _clipBoard + format['"%1%",%2',_x,endl]
+}forEach _boats;
+_clipboard = _clipboard + format["%1// Air%2%3",endl,endl,endl];
+{
+	_clipBoard = _clipBoard + format['"%1%",%2',_x,endl]
+}forEach _Air;
 copyToClipboard _clipboard;
