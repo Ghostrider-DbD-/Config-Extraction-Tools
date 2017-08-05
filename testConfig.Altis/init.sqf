@@ -14,6 +14,8 @@ DBD_priceConfiguration = "Exile";  // Options are "Exile" or "Epoch".  This conf
 
 player addAction["Run vehiclesConfig","vehiclesConfig.sqf"];
 player addAction["Run vehiclesPricelist","vehiclesPriceList.sqf"];
+player addAction["Run airConfig","airConfig.sqf"];
+player addAction["Run airPriceList","airPriceList.sqf"];
 player addAction["Run weaponsConfig","weaponsConfig.sqf"];
 player addAction["Run weaponsPriceList","weaponsPriceList.sqf"];
 player addAction["Run magazinesConfig","magazinesConfig.sqf"];
