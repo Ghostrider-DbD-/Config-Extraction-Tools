@@ -15,15 +15,15 @@ _allWearableRoots = ["Pistol","Rifle","Launcher"];
 _allWearableTypes = ["AssaultRifle","MachineGun","SniperRifle","Shotgun","Rifle","Pistol","SubmachineGun","Handgun","MissileLauncher","RocketLauncher","Throw","GrenadeCore"];
 _addedBaseNames = [];
 _allBannedWearables = [];
-_uniforms = []; //Assault Rifles
-_headgear = []; //Assault Rifles with GL
-_glasses = []; //Light Machine Guns
-_masks = []; //Sub Machine Guns
-_backpacks = []; //Designated Marksman Rifles
+_uniforms = []; 
+_headgear = []; 
+_glasses = []; 
+_masks = []; 
+_backpacks = []; 
 _vests = [];
-_goggles = []; //Sniper rifles
-_binocs = []; //HandGuns/Pistols
-_NVG = []; //Shotguns  //  NVGoggles
+_goggles = []; 
+_binocs = []; 
+_NVG = []; 
 //_wpnThrow = []; // throwables
 //_wpnUnknown = []; //Misc
 
@@ -193,3 +193,5 @@ _clipBoard = _clipBoard + format["%2%3// Unknown %1",endl,endl,endl];
 }forEach _wpnUnknown;
 */
 copyToClipboard _clipBoard;
+
+_clipBoard
