@@ -10,7 +10,7 @@
 */
 
 _baseWearables = [];
-//#include "baseWearables.sqf"
+#include "ExcludedClassNames\baseWearables.sqf"
 _allWearableRoots = ["Pistol","Rifle","Launcher"];
 _allWearableTypes = ["AssaultRifle","MachineGun","SniperRifle","Shotgun","Rifle","Pistol","SubmachineGun","Handgun","MissileLauncher","RocketLauncher","Throw","GrenadeCore"];
 _addedBaseNames = [];

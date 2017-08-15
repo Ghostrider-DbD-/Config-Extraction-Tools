@@ -21,24 +21,8 @@ player addAction ["Vehicles","vehicles.sqf", [], 9];
 player addAction ["Weapons","weapons.sqf",[], 8.9];
 player addAction ["Magazines","magazines.sqf", 8.7];
 player addAction ["Wearables","wearables.sqf", 8.8];
-/*
-player addAction["Run vehiclesConfig","vehiclesConfig.sqf"];
-player addAction["Run vehiclesPricelist","vehiclesPriceList.sqf"];
-player addAction["Run airConfig","airConfig.sqf"];
-player addAction["Run airPriceList","airPriceList.sqf"];
-player addAction["Run weaponsConfig","weaponsConfig.sqf"];
-player addAction["Run weaponsPriceList","weaponsPriceList.sqf"];
-player addAction["Run magazinesConfig","magazinesConfig.sqf"];
-player addAction["Run magazinesPriceList","magazinesPriceList.sqf"];
-player addAction["Run wearablesConfig","wearablesConfig.sqf"];
-player addAction["Run wearablesPriceList","wearablesPriceList.sqf"];
 
-player addAction["Run headgearConfig","headgearConfig.sqf"];
-player addAction["Run headgearPriceList","headgearPriceList.sqf"];
-player addAction["Run vestsConfig","vestsConfig.sqf"];
-player addAction["Run vestsPriceList","vestsPriceList.sqf"];
-player addAction["Run uniformsConfig","uniformsConfig.sqf"];
-player addAction["Run uniformsPriceList","uniformsPriceList.sqf"];
+
 
 
 

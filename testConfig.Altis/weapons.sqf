@@ -9,7 +9,7 @@
 	http://creativecommons.org/licenses/by-nc-sa/4.0/	
 */
 _weaponsBase = [];
-//#include "ExcludedClassNames\weaponsBase.sqf"
+#include "ExcludedClassNames\baseWeapons.sqf"
 _knownWeapons = [];
 
 _allWeaponRoots = ["Pistol","Rifle","Launcher"];

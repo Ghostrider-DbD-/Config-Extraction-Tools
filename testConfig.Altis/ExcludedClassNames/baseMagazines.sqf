@@ -9,8 +9,18 @@
 
 	http://creativecommons.org/licenses/by-nc-sa/4.0/		
 */
-
-_baseMagazines = [
 //  Magazines
+/*
+	Add the class names of any magazines you wish to exclude to _baseMagazines using the formating shown in the example below.
+	
+	For example, if you wish to exclude smoke rounds add:
+		
+	"VehicleMagazine",
+	"SmokeLauncherMag",
+	"SmokeLauncherMag_boat"
+
+*/
+_baseMagazines = [
+
 
 ];
