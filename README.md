@@ -1,6 +1,6 @@
 /*
 	=========================================
-	GhostriderDBD' className extraction tool.
+	Ghostrider [GRG]' className extraction tool.
 	=========================================
 */
 
