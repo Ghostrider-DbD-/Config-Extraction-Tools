@@ -9,7 +9,7 @@
 */
 
 _baseMagazines = [];
-//#include "ExcludedClassNames\baseMagazines.sqf"
+#include "ExcludedClassNames\baseMagazines.sqf"
 _cfgMagazines = (configfile >> "CfgMagazines") call BIS_fnc_getCfgSubClasses;
 //_cfgMagazines sort true;
 _sortedMagazines = [];

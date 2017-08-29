@@ -9,7 +9,7 @@
 */
 
 _vehiclesBase = [];
-//#include "ExcludedClassNames\vehiclesBase.sqf"
+#include "ExcludedClassNames\baseVehicles.sqf"
 _veh = (configfile >> "CfgVehicles") call BIS_fnc_getCfgSubClasses;
 //_veh sort true;
 systemChat format[" _veh contains %1 entries",count _veh];
