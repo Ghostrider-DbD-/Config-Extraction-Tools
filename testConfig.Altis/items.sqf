@@ -86,53 +86,36 @@
 	Returns:
 	ARRAY in format [category,type]
 */
-_baseWearables = [];
-#include "ExcludedClassNames\baseWearables.sqf"
+_baseItems = [];
+_mines = [];
+_lasers = [];
+_items = [];
+_allItemTypes = ["Equipment"];
+_excludedItemTypes = [
+			"AccessoryMuzzle",
+			"AccessoryPointer",
+			"AccessorySights",
+            "AccessoryBipod"
+];
 _addedBaseNames = [];
-_allBannedWearables = [];
-_uniforms = [];
-_headgear = []; 
-_glasses = []; 
-_masks = []; 
-_backpacks = []; 
-_vests = [];
-_goggles = []; 
-
-_NVG = []; 
-
-_wearablesList = (configFile >> "cfgWeapons") call BIS_fnc_getCfgSubClasses;
-_temp = (configFile >> "cfgVehicles") call BIS_fnc_getCfgSubClasses;
-_wearablesList = _wearablesList + _temp;
-_temp = (configFile >> "CfgGlasses") call BIS_fnc_getCfgSubClasses;
-_wearablesList = _wearablesList + _temp;
+_itemsList = (configFile >> "cfgWeapons") call BIS_fnc_getCfgSubClasses;
+_temp = (configfile >> "CfgMagazines") call BIS_fnc_getCfgSubClasses;
+_itemsList = _itemsList + _temp;
 //_wearablesList sort true;
 {
 	_itemType = _x call BIS_fnc_itemType;
 	diag_log format["for Item %1 its ItemType [0] is %2",_x,_itemType select 0];
-	if (_itemType select 0 isEqualTo "Equipment") then
+	if ((_itemType select 0) in _allItemTypes) then
 	{
-		if ( !(_x in _baseWearables) && !(_x in _addedBaseNames) ) then
-		{	
-			_baseWearables pushBack _x;
-
-				diag_log format["_x = %1, _itemType = %2",_x, _itemType select 1];		
-				// Uniforms
-				if (_itemType select 1 isEqualTo "Uniform") then {_uniforms pushBack _x};
-				// Headgear / Masks
-				//if ( (_x isKindOF ["HelmetBase", configFile >> "CfgWeapons"]) or (_x isKindOF ["H_HelmetB", configFile >> "CfgWeapons"]) ) then {_headgear pushBack _x};
-				if (_itemType select 1 isEqualTo "Headgear") then {_headgear pushBack _x};				
-				
-				//if (_x isKindOF ["GoggleItem", configFile >> "CfgWeapons"]) then {_goggles pushBack _x};
-				if (_itemType select 1 isEqualTo "Glasses") then {_glasses pushBack _x};
-				// Vests
-				//if ( (_x isKindOF ["Vest_Camo_Base", configFile >> "CfgWeapons"]) or (_x isKindOF ["Vest_NoCamo_Base", configFile >> "CfgWeapons"]) ) then {_vests pushBack _x};
-				if (_itemType select 1 isEqualTo "Vest") then {_vests pushBack _x};
-				// Backpacks	
-				//if (_x isKindOF ["Bag_Base", configFile >> "CfgVehicles"]) then {_backpacks pushBack _x};
-				if (_itemType select 1 isEqualTo "Backpack") then {_backpacks pushBack _x};
+		if ( !(_x in _baseItems) && !(_x in _addedBaseNames) ) then
+		{
+			_baseItems pushBack _x;
+			diag_log format["_x = %1, _itemType [0] = %2 _itemType[1] = %3",_x, _itemType select 0, _itemType select 1];		
+			if (_itemType select 0 isEqualTo "Mine" && !(_itemType select 1 in _excludedItemTypes)) then {_mines pushBack _x};
+			if (_itemType select 0 isEqualTo "Item" && !(_itemType select 1 in _excludedItemTypes)) then {_items pushBack _x};
 		};
 	};
-} foreach _wearablesList;
+} foreach _itemsList;
 
 _clipBoard = "";
 
@@ -150,11 +133,9 @@ if (GRG_mod == "Epoch") then
 	_clipBoard = _clipBoard + _temp;
 } foreach
 [
-	["Uniforms",_uniforms],
-	["Headgear",_headgear],
-	["Vests",_vests],
-	["Backpacks",_backpacks],
-	["Glasses",_glasses]
+	["Mines",_mines],
+	["Lasers",_lasers],
+	["Items",_items]
 ];
 
 if (GRG_mod == "Exile") then 
@@ -172,11 +153,9 @@ if (GRG_mod == "Epoch") then
 	_clipBoard = _clipBoard + _temp;
 } foreach
 [
-	["Uniforms",_uniforms],
-	["Headgear",_headgear],
-	["Vests",_vests],
-	["Backpacks",_backpacks],
-	["Glasses",_glasses]
+	["Mines",_mines],
+	["Lasers",_lasers],
+	["Items",_items]
 ];
 
 if (GRG_mod == "Exile") then 
@@ -193,11 +172,9 @@ if (GRG_mod == "Epoch") then
 	_clipBoard = _clipBoard + _temp;
 } foreach
 [
-	["Uniforms",_uniforms],
-	["Headgear",_headgear],
-	["Vests",_vests],
-	["Backpacks",_backpacks],
-	["Glasses",_glasses]
+	["Mines",_mines],
+	["Lasers",_lasers],
+	["Items",_items]
 ];
 copyToClipboard _clipBoard;
 hint format["Wearables Config Extractor Run complete%1Output copied to clipboard%1Paste it into a text editor to acces",endl];
