@@ -7,32 +7,48 @@
 
 	http://creativecommons.org/licenses/by-nc-sa/4.0/		
 */
-
+_allTanks =
+[	
+	"B_APC_Tracked_01_rcws_F",
+	"B_APC_Tracked_01_CRV_F",
+	"B_APC_Tracked_01_AA_F",
+	"B_MBT_01_arty_F",
+	"B_MBT_01_mlrs_F",
+	"B_MBT_01_TUSK_F",
+	"O_APC_Tracked_02_cannon_F", 
+	"O_APC_Tracked_02_AA_F",
+	"O_MBT_02_cannon_F",
+	"O_MBT_02_arty_F",
+	"O_APC_Wheeled_02_rcws_F", 
+	"I_APC_tracked_03_cannon_F",
+	"I_MBT_03_cannon_F"
+];
+			
 _vehiclesBase = [];
 #include "ExcludedClassNames\baseVehicles.sqf"
 _veh = (configfile >> "CfgVehicles") call BIS_fnc_getCfgSubClasses;
-//_veh sort true;
-systemChat format[" _veh contains %1 entries",count _veh];
+_veh sort true;
 _index = 0;
 _cars = [];
+_tanks = [];
 _boats = [];
 _air = [];
+_helis = [];
+_planes = [];
 _exile = 0;
  
 {
-	if (_x isKindOf "Car" && !(_x in _vehiclesBase)) then
+	if !(_x in _vehiclesBase) then
 	{
-		_cars pushback _x;
+		if (_x isKindOf "Tank") then {_tanks pushBack _x;systemChat format["Adding Tank %1",_x];};
+		if (_x isKindOf "Car") then {_cars pushBack _x};
+		if ((_x isKindOf "Plane")) then {_planes pushBack _x};
+		if ((_x isKindOf "Helicopter")) then {_helis pushBack _x};
+		if (_x isKindOf "Ship") then {_boats pushback _x;};	
 	};
-	if (_x isKindOf "Air" && !(_x in _vehiclesBase)) then
-	{
-		_air pushback _x;
-	};
-	if (_x isKindOf "Boat" && !(_x in _vehiclesBase)) then
-	{
-		_boat pushback _x;
-	};	
 }forEach _veh;
+
+systemChat format["%1 tanks found",count _tanks];
 
 _clipBoard = "";
 
@@ -45,15 +61,19 @@ if (GRG_mod == "Epoch") then
 	_clipboard = _clipboard + GRG_Epoch_ItemLists_Header;
 };
 
-_clipboard = _clipboard + format["// Cars%1%2",endl,endl,endl];
-_temp = [_cars] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-_clipboard = _clipboard + format["%1// Boats%2%3",endl,endl,endl];
-_temp = [_boats] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-_clipboard = _clipboard + format["%1// Air%2%3",endl,endl,endl];
-_temp = [_air] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
+{
+	private _t = "";
+	_clipboard = _clipboard + format["%2%2// %1%2%2",_x select 0,endl];
+	_t = [_x select 1] call fn_generateItemList;
+	_clipBoard = _clipBoard + _t;
+}forEach[
+["Cars",_cars],
+["Tanks",_tanks],
+["Boats",_boats],
+["Helis",_helis],
+["Planes",_planes],
+["Other Air",_air]
+];
 
 if (GRG_mod == "Exile") then 
 {
@@ -63,33 +83,20 @@ if (GRG_mod == "Epoch") then
 {
 	_clipboard = _clipBoard + GRG_Epoch_Pricelist_Header;
 };
-_clipboard = _clipboard + format["// Cars%1%2",endl,endl,endl];
-_temp = [_cars] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-_clipboard = _clipboard + format["%1// Boats%2%3",endl,endl,endl];
-_temp = [_boats] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-_clipboard = _clipboard + format["%1// Air%2%3",endl,endl,endl];
-_temp = [_air] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
 
-if (GRG_mod == "Exile") then 
 {
-	_clipboard = _clipBoard + GRG_Exile_Loottable_Header;
-};
-if (GRG_mod == "Epoch") then 
-{
-	_clipboard = _clipBoard + GRG_Epoch_Loottable_Header;
-};
-_clipboard = _clipboard + format["// Cars%1%2",endl,endl,endl];
-_temp = [_cars] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-_clipboard = _clipboard + format["%1// Boats%2%3",endl,endl,endl];
-_temp = [_boats] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-_clipboard = _clipboard + format["%1// Air%2%3",endl,endl,endl];
-_temp = [_air] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
+	private _t = "";
+	_clipboard = _clipboard + format["%2%2// %1%2%2",_x select 0,endl];
+	_t = [_x select 1] call fn_generatePriceList;
+	_clipBoard = _clipBoard + _t;
+}forEach[
+["Cars",_cars],
+["Tanks",_tanks],
+["Boats",_boats],
+["Helis",_helis],
+["Planes",_planes],
+["Other Air",_air]
+];
 
 copyToClipboard _clipboard;
 

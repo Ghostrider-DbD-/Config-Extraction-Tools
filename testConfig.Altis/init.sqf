@@ -21,8 +21,8 @@ player addAction ["Vehicles","vehicles.sqf", [], 9];
 player addAction ["Weapons","weapons.sqf",[], 8.9];
 player addAction ["Magazines","magazines.sqf", 8.7];
 player addAction ["Wearables","wearables.sqf", 8.8];
-
-
+player addAction ["Items","items.sqf",8.6];
+player addAction ["Turrets","vehiclesTurrets.sqf", 8.5];
 
 
 

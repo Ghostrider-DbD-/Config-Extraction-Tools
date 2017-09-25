@@ -47,7 +47,13 @@ _wpList = (configFile >> "cfgWeapons") call BIS_fnc_getCfgSubClasses;
 	} forEach _allWeaponRoots;
 	if (_isKindOf) then
 	{
-		//if (getnumber (configFile >> "cfgWeapons" >> _x >> "scope") == 2) then {
+		//_msg = format["weapons classname extractor:  _item = %1",_item];
+		//diag_log _msg;
+		//systemChat _msg;
+		if !(_item in _knownWeapons) then
+		{
+			_knownWeapons pushBack _item;
+			//if (getnumber (configFile >> "cfgWeapons" >> _x >> "scope") == 2) then {
 			_itemType = _x call bis_fnc_itemType;
 			_itemCategory = _itemType select 1;
 			//diag_log format["pullWepClassNames::  _itemType = %1 || _itemCategory = %2",_itemType, _itemCategory];
@@ -97,6 +103,7 @@ _wpList = (configFile >> "cfgWeapons") call BIS_fnc_getCfgSubClasses;
 					}forEach _underbarrel;
 				};
 			};
+		};
 	};
 } foreach _wpList;
 
@@ -111,69 +118,29 @@ if (GRG_mod == "Epoch") then
 	_clipboard = _clipBoard + GRG_Epoch_ItemLists_Header;
 };
 
-_clipboard = _clipboard + format["%2%3// // Assault Rifles %1",endl,endl,endl];
-_temp = [_wpnAR] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Assault Rifles with GL %1",endl,endl,endl];
-_temp = [_wpnARG] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// LMGs %1",endl,endl,endl];
-_temp = [_wpnLMG] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// SMGs %1",endl,endl,endl];
-_temp = [_wpnSMG] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Snipers %1",endl,endl,endl];
-_temp = [_wpnSniper] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// DMRs %1",endl,endl,endl];
-_temp = [_wpnDMR] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Launchers %1",endl,endl,endl];
-_temp = [_wpnLauncher] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Handguns %1",endl,endl,endl];
-_temp = [_wpnHandGun] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Shotguns %1",endl,endl,endl];
-_temp = [_wpnShotGun] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Throwables %1",endl,endl,endl];
-_temp = [_wpnThrow] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Unknown %1",endl,endl,endl];
-_temp = [_wpnUnknown] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Magazines %1",endl,endl,endl];
-_temp = [_wpnMagazines] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Optics %1",endl,endl,endl];
-_temp = [_wpnOptics] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Muzzles %1",endl,endl,endl];
-_temp = [_wpnMuzzles] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Pointers %1",endl,endl,endl];
-_temp = [_wpnPointers] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Underbarrel %1",endl,endl,endl];
-_temp = [_wpnUnderbarrel] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
+{
+	_clipboard = _clipboard + format["%2%2// %1 %2%2",_x select 0, endl];
+	_temp = [_x select 1] call fn_generateItemList;
+	_clipBoard = _clipBoard + _temp;
+} foreach
+[
+	["Assault Rifles ",_wpnAR],
+	["Assault Rifles with GL",_wpnARG],
+	["LMGs",_wpnLMG],
+	[" SMGs ",_wpnSMG],
+	["Snipers ",_wpnSniper],
+	["DMRs ",_wpnDMR],	
+	["Launchers ",_wpnLauncher],	
+	["Handguns ",_wpnHandGun],	
+	["Shotguns ",_wpnShotGun],	
+	["Throwables ",_wpnThrow],	
+	["Magazines ",_wpnMagazines],	
+	["Optics ",_wpnOptics],	
+	["Muzzles ",_wpnMuzzles],	
+	["Pointers ",_wpnPointers],	
+	["Underbarrel ",_wpnUnderbarrel],	
+	["Unknown ",_wpnUnknown]
+];
 
 if (GRG_mod == "Exile") then 
 {
@@ -183,71 +150,29 @@ if (GRG_mod == "Epoch") then
 {
 	_clipboard = _clipBoard + GRG_Epoch_Pricelist_Header;
 };
-
-_clipboard = _clipboard + format["%2%3// // Assault Rifles %1",endl,endl,endl];
-_temp = [_wpnAR] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Assault Rifles with GL %1",endl,endl,endl];
-_temp = [_wpnARG] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// LMGs %1",endl,endl,endl];
-_temp = [_wpnLMG] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// SMGs %1",endl,endl,endl];
-_temp = [_wpnSMG] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Snipers %1",endl,endl,endl];
-_temp = [_wpnSniper] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// DMRs %1",endl,endl,endl];
-_temp = [_wpnDMR] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Launchers %1",endl,endl,endl];
-_temp = [_wpnLauncher] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Handguns %1",endl,endl,endl];
-_temp = [_wpnHandGun] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Shotguns %1",endl,endl,endl];
-_temp = [_wpnShotGun] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Throwables %1",endl,endl,endl];
-_temp = [_wpnThrow] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Unknown %1",endl,endl,endl];
-_temp = [_wpnUnknown] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Magazines %1",endl,endl,endl];
-_temp = [_wpnMagazines] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Optics %1",endl,endl,endl];
-_temp = [_wpnOptics] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Muzzles %1",endl,endl,endl];
-_temp = [_wpnMuzzles] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Pointers %1",endl,endl,endl];
-_temp = [_wpnPointers] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Underbarrel %1",endl,endl,endl];
-_temp = [_wpnUnderbarrel] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
+{
+	_clipboard = _clipboard + format["%2%2// %1 %2%2",_x select 0, endl];
+	_temp = [_x select 1] call fn_generatePriceList;
+	_clipBoard = _clipBoard + _temp;
+} foreach
+[
+	["Assault Rifles ",_wpnAR],
+	["Assault Rifles with GL",_wpnARG],
+	["LMGs",_wpnLMG],
+	[" SMGs ",_wpnSMG],
+	["Snipers ",_wpnSniper],
+	["DMRs ",_wpnDMR],	
+	["Launchers ",_wpnLauncher],	
+	["Handguns ",_wpnHandGun],	
+	["Shotguns ",_wpnShotGun],	
+	["Throwables ",_wpnThrow],	
+	["Magazines ",_wpnMagazines],	
+	["Optics ",_wpnOptics],	
+	["Muzzles ",_wpnMuzzles],	
+	["Pointers ",_wpnPointers],	
+	["Underbarrel ",_wpnUnderbarrel],	
+	["Unknown ",_wpnUnknown]
+];
 
 if (GRG_mod == "Exile") then 
 {
@@ -257,71 +182,29 @@ if (GRG_mod == "Epoch") then
 {
 	_clipboard = _clipBoard + GRG_Epoch_Loottable_Header;
 };
-
-_clipboard = _clipboard + format["%2%3// // Assault Rifles %1",endl,endl,endl];
-_temp = [_wpnAR] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Assault Rifles with GL %1",endl,endl,endl];
-_temp = [_wpnARG] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// LMGs %1",endl,endl,endl];
-_temp = [_wpnLMG] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// SMGs %1",endl,endl,endl];
-_temp = [_wpnSMG] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Snipers %1",endl,endl,endl];
-_temp = [_wpnSniper] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// DMRs %1",endl,endl,endl];
-_temp = [_wpnDMR] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Launchers %1",endl,endl,endl];
-_temp = [_wpnLauncher] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Handguns %1",endl,endl,endl];
-_temp = [_wpnHandGun] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Shotguns %1",endl,endl,endl];
-_temp = [_wpnShotGun] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Throwables %1",endl,endl,endl];
-_temp = [_wpnThrow] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Unknown %1",endl,endl,endl];
-_temp = [_wpnUnknown] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Magazines %1",endl,endl,endl];
-_temp = [_wpnMagazines] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Optics %1",endl,endl,endl];
-_temp = [_wpnOptics] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Muzzles %1",endl,endl,endl];
-_temp = [_wpnMuzzles] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Pointers %1",endl,endl,endl];
-_temp = [_wpnPointers] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Underbarrel %1",endl,endl,endl];
-_temp = [_wpnUnderbarrel] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
+{
+	_clipboard = _clipboard + format["%2%2// %1 %2%2",_x select 0, endl];
+	_temp = [_x select 1] call fn_generateLootTableEntries;
+	_clipBoard = _clipBoard + _temp;
+} foreach
+[
+	["Assault Rifles ",_wpnAR],
+	["Assault Rifles with GL",_wpnARG],
+	["LMGs",_wpnLMG],
+	[" SMGs ",_wpnSMG],
+	["Snipers ",_wpnSniper],
+	["DMRs ",_wpnDMR],	
+	["Launchers ",_wpnLauncher],	
+	["Handguns ",_wpnHandGun],	
+	["Shotguns ",_wpnShotGun],	
+	["Throwables ",_wpnThrow],	
+	["Magazines ",_wpnMagazines],	
+	["Optics ",_wpnOptics],	
+	["Muzzles ",_wpnMuzzles],	
+	["Pointers ",_wpnPointers],	
+	["Underbarrel ",_wpnUnderbarrel],	
+	["Unknown ",_wpnUnknown]
+];
 copyToClipboard _clipBoard;
 
 hint format["Weapons Config Extractor Run complete%1Output copied to clipboard%1Paste it into a text editor to acces",endl];
