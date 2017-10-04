@@ -7,25 +7,10 @@
 
 	http://creativecommons.org/licenses/by-nc-sa/4.0/		
 */
-_allTanks =
-[	
-	"B_APC_Tracked_01_rcws_F",
-	"B_APC_Tracked_01_CRV_F",
-	"B_APC_Tracked_01_AA_F",
-	"B_MBT_01_arty_F",
-	"B_MBT_01_mlrs_F",
-	"B_MBT_01_TUSK_F",
-	"O_APC_Tracked_02_cannon_F", 
-	"O_APC_Tracked_02_AA_F",
-	"O_MBT_02_cannon_F",
-	"O_MBT_02_arty_F",
-	"O_APC_Wheeled_02_rcws_F", 
-	"I_APC_tracked_03_cannon_F",
-	"I_MBT_03_cannon_F"
-];
 			
-_vehiclesBase = [];
-#include "ExcludedClassNames\baseVehicles.sqf"
+_excludedVehicles = [];
+_baseClasses = [];
+#include "ExcludedClassNames\excludedVehicles.sqf"
 _veh = (configfile >> "CfgVehicles") call BIS_fnc_getCfgSubClasses;
 _veh sort true;
 _index = 0;
@@ -35,12 +20,42 @@ _boats = [];
 _air = [];
 _helis = [];
 _planes = [];
-_exile = 0;
- 
+_process = true;
+_n = count _veh;
+_index = 0;
+_counter = 1;
+_interval = 25;
+systemChat "Classname Extraction tool for vehicles initialized";
 {
-	if !(_x in _vehiclesBase) then
+	_process = true;
+	if (GRG_Root isEqualTo "") then 
 	{
-		if (_x isKindOf "Tank") then {_tanks pushBack _x;systemChat format["Adding Tank %1",_x];};
+		_process = true;
+	} else {
+		_leftSTR = [toLower _x,count GRG_Root] call KRON_StrLeft;
+		_process = ((toLower GRG_Root) isEqualTo _leftSTR);
+		//systemChat format["vehicles.sqf:: _leftSTR = %1 and _process = %2",_leftSTR, _process];		
+	};
+	if ([toLower _x,"base"] call KRON_StrInStr || [toLower _x,"abstract"] call KRON_StrInStr) then
+	{
+		if !(_x in _baseClasses) then {_baseClasses pushBack _x};
+		_process = false;
+		_msg = format["base class %1 ignored",_x];
+		systemChat _msg;
+		//diag_log _msg;
+	};
+	if (_process && !(_x in _excludedVehicles)) then
+	{
+		if (_index == 1) then 
+		{
+			_msg = format["Classname: %1 %2 out of %3",_x, _counter, _n];
+			systemChat _msg;
+			//diag_log _msg;		
+		};
+		if (_index == _interval) then {_index = 0};
+		_index = _index + 1;
+		_counter = _counter + 1;
+		if (_x isKindOf "Tank") then {_tanks pushBack _x;/*systemChat format["Adding Tank %1",_x];*/};
 		if (_x isKindOf "Car") then {_cars pushBack _x};
 		if ((_x isKindOf "Plane")) then {_planes pushBack _x};
 		if ((_x isKindOf "Helicopter")) then {_helis pushBack _x};
@@ -48,7 +63,7 @@ _exile = 0;
 	};
 }forEach _veh;
 
-systemChat format["%1 tanks found",count _tanks];
+systemChat format["%1 classnames processed, formating trader entries",count _veh];
 
 _clipBoard = "";
 
@@ -97,7 +112,7 @@ if (GRG_mod == "Epoch") then
 ["Planes",_planes],
 ["Other Air",_air]
 ];
-
+systemChat "All Vehicles Process and results copied to clipboard";
 copyToClipboard _clipboard;
 
 hint format["Vehicles Config Extractor Run complete%1Output copied to clipboard%1Paste it into a text editor to acces",endl];
