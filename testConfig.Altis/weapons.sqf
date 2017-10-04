@@ -10,7 +10,7 @@
 */
 _weaponsBase = [];
 _knownWeapons = [];
-#include "ExcludedClassNames\baseWeapons.sqf"
+#include "ExcludedClassNames\excludedWeapons.sqf"
 
 
 _allWeaponRoots = ["Pistol","Rifle","Launcher"];
@@ -33,34 +33,60 @@ _wpnMagazines = [];
 _wpnOptics = [];
 _wpnPointers = [];
 _wpnMuzzles = [];
-
-_aBaseNames = [];
+_baseClasses = [];
+_process = false;
 _wpList = (configFile >> "cfgWeapons") call BIS_fnc_getCfgSubClasses;
 //_wpList sort true;
 {
 	_item = _x;
 	_isWeap = false;
-	_isKindOf = false;
+	_isWeapon = false;
+	_process = false;
 	{
-		_isKindOf = (_item isKindOF [_x, configFile >> "CfgWeapons"]);
-		if (_isKindOf) exitWith {};
+		_isWeapon = (_item isKindOF [_x, configFile >> "CfgWeapons"]);
+		if (_isWeapon) exitWith {};
 	} forEach _allWeaponRoots;
-	if (_isKindOf) then
+	
+	if (_isWeapon && GRG_Root isEqualTo "") then 
+	{
+		_process = true;
+	};
+	if (_isWeapon && (count GRG_Root > 0)) then
+	{
+		_leftSTR = [toLower _x,count GRG_Root] call KRON_StrLeft;
+		_process = ((toLower GRG_Root) isEqualTo _leftSTR);
+		//_msg = format["weaponss.sqf:: _leftSTR = %1 and _process = %2",_leftSTR, _process];
+		//systemChat _msg;
+		//diag_log _msg;
+	};
+	
+	if (_isWeapon  && _process) then
+	{
+		if ([toLower _x,"base"] call KRON_StrInStr || [toLower _x,"abstract"] call KRON_StrInStr) then
+		{
+			if !(_x in _baseClasses) then {_baseClasses pushBack _x};
+			_process = false;
+			systemChat format["base class %1 ignored",_x];
+		};			
+	};
+	
+	if (_isWeapon && _process) then 
 	{
 		//_msg = format["weapons classname extractor:  _item = %1",_item];
 		//diag_log _msg;
 		//systemChat _msg;
-		if !(_item in _knownWeapons) then
+		if !(_item in _excludedWeapons) then
 		{
-			_knownWeapons pushBack _item;
-			//if (getnumber (configFile >> "cfgWeapons" >> _x >> "scope") == 2) then {
+			_excludedWeapons pushBack _item;
 			_itemType = _x call bis_fnc_itemType;
 			_itemCategory = _itemType select 1;
 			//diag_log format["pullWepClassNames::  _itemType = %1 || _itemCategory = %2",_itemType, _itemCategory];
-			if (((_itemType select 0) == "Weapon") && ((_itemType select 1) in _allWeaponTypes)) then {
+			if (((_itemType select 0) == "Weapon") && ((_itemType select 1) in _allWeaponTypes)) then 
+			{
 				_baseName = _x call BIS_fnc_baseWeapon;
-				//diag_log format["pullWepClassNames:: Processing for _baseName %3 || _itemType = %1 || _itemCategory = %2",_itemType, _itemCategory, _baseName];
-				if (!(_baseName in _addedBaseNames) && !(_baseName in _allBannedWeapons)) then {
+				systemChat format["pullWepClassNames:: Processing for _baseName %3 || _itemType = %1 || _itemCategory = %2",_itemType, _itemCategory, _baseName];
+				if (!(_baseName in _addedBaseNames) && !(_baseName in _allBannedWeapons)) then 
+				{
 					_addedBaseNames pushBack _baseName;
 					
 					switch(_itemCategory)do{
@@ -206,5 +232,5 @@ if (GRG_mod == "Epoch") then
 	["Unknown ",_wpnUnknown]
 ];
 copyToClipboard _clipBoard;
-
+systemChat "All Weapons Processws and results copied to clipboard";
 hint format["Weapons Config Extractor Run complete%1Output copied to clipboard%1Paste it into a text editor to acces",endl];

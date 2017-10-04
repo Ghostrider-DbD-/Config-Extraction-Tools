@@ -86,9 +86,9 @@
 	Returns:
 	ARRAY in format [category,type]
 */
-_baseWearables = [];
-#include "ExcludedClassNames\baseWearables.sqf"
-_addedBaseNames = [];
+_excludedWearables = [];
+#include "ExcludedClassNames\excludedWearables.sqf"
+_baseClasses = [];
 _allBannedWearables = [];
 _uniforms = [];
 _headgear = []; 
@@ -97,7 +97,6 @@ _masks = [];
 _backpacks = []; 
 _vests = [];
 _goggles = []; 
-
 _NVG = []; 
 
 _wearablesList = (configFile >> "cfgWeapons") call BIS_fnc_getCfgSubClasses;
@@ -105,17 +104,34 @@ _temp = (configFile >> "cfgVehicles") call BIS_fnc_getCfgSubClasses;
 _wearablesList = _wearablesList + _temp;
 _temp = (configFile >> "CfgGlasses") call BIS_fnc_getCfgSubClasses;
 _wearablesList = _wearablesList + _temp;
-//_wearablesList sort true;
+_wearablesList sort true;
 {
 	_itemType = _x call BIS_fnc_itemType;
-	diag_log format["for Item %1 its ItemType [0] is %2",_x,_itemType select 0];
+	//diag_log format["for Item %1 its ItemType [0] is %2",_x,_itemType select 0];
 	if (_itemType select 0 isEqualTo "Equipment") then
 	{
-		if ( !(_x in _baseWearables) && !(_x in _addedBaseNames) ) then
+		_process = true;
+		if (GRG_Root isEqualTo "") then 
+		{
+			_process = true;
+		} else {
+			_leftSTR = [toLower _x,count GRG_Root] call KRON_StrLeft;
+			_process = ((toLower GRG_Root) isEqualTo _leftSTR);
+			//systemChat format["wearables.sqf:: _leftSTR = %1 and _process = %2",_leftSTR, _process];		
+		};
+		if ([toLower _x,"base"] call KRON_StrInStr || [toLower _x,"abstract"] call KRON_StrInStr) then
+		{
+			if !(_x in _baseClasses) then {_baseClasses pushBack _x};
+			_process = false;
+			_msg = format["base class %1 ignored",_x];
+			systemChat _msg;
+			//diag_log _msg;
+		};	
+		if ( !(_x in _excludedWearables) && _process) then
 		{	
-			_baseWearables pushBack _x;
+			_excludedWearables pushBack _x;
 
-				diag_log format["_x = %1, _itemType = %2",_x, _itemType select 1];		
+				systemChat format["classname = %1, _itemType = %2",_x, _itemType select 1];		
 				// Uniforms
 				if (_itemType select 1 isEqualTo "Uniform") then {_uniforms pushBack _x};
 				// Headgear / Masks
@@ -200,4 +216,5 @@ if (GRG_mod == "Epoch") then
 	["Glasses",_glasses]
 ];
 copyToClipboard _clipBoard;
+systemChat "All wearables Processed and results copied to clipboard";
 hint format["Wearables Config Extractor Run complete%1Output copied to clipboard%1Paste it into a text editor to acces",endl];

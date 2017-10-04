@@ -1,5 +1,6 @@
 
 _vehiclesBase = [];
+_baseClasses = [];
 #include "ExcludedClassNames\baseVehicles.sqf"
 _veh = (configfile >> "CfgVehicles") call BIS_fnc_getCfgSubClasses;
 _veh sort true;
@@ -13,7 +14,24 @@ _planes = [];
 _exile = 0;
  
 {
-	if !(_x in _vehiclesBase) then
+	_process = true;
+	if (GRG_Root isEqualTo "") then 
+	{
+		_process = true;
+	} else {
+		_leftSTR = [toLower _x,count GRG_Root] call KRON_StrLeft;
+		_process = ((toLower GRG_Root) isEqualTo _leftSTR);
+		systemChat format["vehicles.sqf:: _leftSTR = %1 and _process = %2",_leftSTR, _process];		
+	};
+	if ([toLower _x,"base"] call KRON_StrInStr || [toLower _x,"abstract"] call KRON_StrInStr) then
+	{
+		if !(_x in _baseClasses) then {_baseClasses pushBack _x};
+		_process = false;
+		_msg = format["base class %1 processed",_x];
+		systemChat _msg;
+		diag_log _msg;
+	};
+	if (_process && !(_x in _vehiclesBase)) then
 	{
 		if (_x isKindOf "Tank") then {_tanks pushBack _x;systemChat format["Adding Tank %1",_x];};
 		if (_x isKindOf "Car") then {_cars pushBack _x};
@@ -50,5 +68,5 @@ _allTurrets = [];
 }forEach _allTurrets;
 
 copyToClipboard _clipboard;
-
+systemChat "All Turrets Processed and results copied to clipboard";
 hint format["Vehicles Config Extractor Run complete%1Output copied to clipboard%1Paste it into a text editor to acces",endl];

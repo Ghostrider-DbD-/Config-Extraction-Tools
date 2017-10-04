@@ -87,6 +87,7 @@
 	ARRAY in format [category,type]
 */
 _baseItems = [];
+_baseClasses = [];
 _mines = [];
 _lasers = [];
 _items = [];
@@ -107,10 +108,27 @@ _itemsList = _itemsList + _temp;
 	diag_log format["for Item %1 its ItemType [0] is %2",_x,_itemType select 0];
 	if ((_itemType select 0) in _allItemTypes) then
 	{
-		if ( !(_x in _baseItems) && !(_x in _addedBaseNames) ) then
+		_process = true;
+		if (GRG_Root isEqualTo "") then 
+		{
+			_process = true;
+		} else {
+			_leftSTR = [toLower _x,count GRG_Root] call KRON_StrLeft;
+			_process = ((toLower GRG_Root) isEqualTo _leftSTR);
+			//systemChat format["wearables.sqf:: _leftSTR = %1 and _process = %2",_leftSTR, _process];		
+		};
+		if ([toLower _x,"base"] call KRON_StrInStr || [toLower _x,"abstract"] call KRON_StrInStr) then
+		{
+			if !(_x in _baseClasses) then {_baseClasses pushBack _x};
+			_process = false;
+			_msg = format["base class %1 ignored",_x];
+			systemChat _msg;
+			//diag_log _msg;
+		};		
+		if ( !(_x in _baseItems) && _process) then
 		{
 			_baseItems pushBack _x;
-			diag_log format["_x = %1, _itemType [0] = %2 _itemType[1] = %3",_x, _itemType select 0, _itemType select 1];		
+			systemChat format["classname = %1, _itemType [0] = %2 _itemType[1] = %3",_x, _itemType select 0, _itemType select 1];		
 			if (_itemType select 0 isEqualTo "Mine" && !(_itemType select 1 in _excludedItemTypes)) then {_mines pushBack _x};
 			if (_itemType select 0 isEqualTo "Item" && !(_itemType select 1 in _excludedItemTypes)) then {_items pushBack _x};
 		};
@@ -177,4 +195,5 @@ if (GRG_mod == "Epoch") then
 	["Items",_items]
 ];
 copyToClipboard _clipBoard;
+systemChat "All items Processed and results copied to clipboard";
 hint format["Wearables Config Extractor Run complete%1Output copied to clipboard%1Paste it into a text editor to acces",endl];
