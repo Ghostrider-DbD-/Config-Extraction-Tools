@@ -28,24 +28,53 @@ _scannedMags = [];
 	_isKindOf = (_x isKindOF ["CA_Magazine", configFile >> "CfgMagazines"]); 
 	if (_isKindOf) then
 	{
-		_process = true;
+		processMagazine = true;
 		if (GRG_Root isEqualTo "") then 
 		{
-			_process = true;
+			processMagazine = true;
 		} else {
 			_leftSTR = [toLower _x,count GRG_Root] call KRON_StrLeft;
-			_process = ((toLower GRG_Root) isEqualTo _leftSTR);
-			//systemChat format["wearables.sqf:: _leftSTR = %1 and _process = %2",_leftSTR, _process];		
+			processMagazine = ((toLower GRG_Root) isEqualTo _leftSTR);
+			//systemChat format["wearables.sqf:: _leftSTR = %1 and processMagazine = %2",_leftSTR, processMagazine];		
 		};
 		if ([toLower _x,"base"] call KRON_StrInStr || [toLower _x,"abstract"] call KRON_StrInStr) then
 		{
 			if !(_x in _excludedMagazines) then {_excludedMagazines pushBack _x};
-			_process = false;
+			processMagazine = false;
 			_msg = format["base class %1 ignored",_x];
 			systemChat _msg;
 			//diag_log _msg;
 		};	
-		if (_process && !(_x in _baseMagazines)) then
+		if (processWearable) then
+		{
+			if (GRG_addIttemsMissingFromPricelistOnly) then
+			{
+				if(GRG_mod isEqualTo "Exile") then
+				{
+					if (isNumber (missionConfigFile >> "CfgExileArsenal" >> _x >> "price")) then
+					{
+						diag_log format["price for item %1 = %2 tabs",_x,getNumber(missionConfigFile >> "CfgExileArsenal" >> _x >> "price")];
+						processWearable = false; // Item already listed and assumed to be included in both trader lists and price lists
+						diag_log format["Item %1 already has a price: Not processing item %1",_x];
+					} else {
+						diag_log format["price for item %1 = %2 tabs",_x,getNumber(missionConfigFile >> "CfgExileArsenal" >> _x >> "price")];
+						diag_log format["Item %1 has no price: processing item %1",_x];
+						processWearable = true;
+					};
+				};
+				if (GRG_mod isEqualTo "Epoch") then
+				{
+					if (isNumber (missionConfigFile >> "CfgPricing" >> _x >> "price")) then
+					{
+						processWearable = false; // Item already listed and assumed to be included in both trader lists and price lists
+						
+					} else {
+						processWearable = true;
+					};
+				};
+			};	
+		};		
+		if (processMagazine && !(_x in _baseMagazines)) then
 		{
 			systemChat format["Evaluated Magazine = %1",_x];
 			//if (!(_x isKindOF ["CA_LauncherMagazine", configFile >> "CfgMagazines"]) && !(_x isKindOF ["HandGrenade", configFile >> "CfgMagazines"]) && !(_x isKindOf ["VehicleMagazine", configFile >> "CfgMagazines"]) && !(_x isKindOf ["Exile_AbstractItem", configFile >> "CfgMagazines"])) then {_wpnMagazines pushBack _x};

@@ -108,24 +108,53 @@ _itemsList = _itemsList + _temp;
 	diag_log format["for Item %1 its ItemType [0] is %2",_x,_itemType select 0];
 	if ((_itemType select 0) in _allItemTypes) then
 	{
-		_process = true;
+		processItem = true;
 		if (GRG_Root isEqualTo "") then 
 		{
-			_process = true;
+			processItem = true;
 		} else {
 			_leftSTR = [toLower _x,count GRG_Root] call KRON_StrLeft;
-			_process = ((toLower GRG_Root) isEqualTo _leftSTR);
-			//systemChat format["wearables.sqf:: _leftSTR = %1 and _process = %2",_leftSTR, _process];		
+			processItem = ((toLower GRG_Root) isEqualTo _leftSTR);
+			//systemChat format["wearables.sqf:: _leftSTR = %1 and processItem = %2",_leftSTR, processItem];		
 		};
 		if ([toLower _x,"base"] call KRON_StrInStr || [toLower _x,"abstract"] call KRON_StrInStr) then
 		{
 			if !(_x in _baseClasses) then {_baseClasses pushBack _x};
-			_process = false;
+			processItem = false;
 			_msg = format["base class %1 ignored",_x];
 			systemChat _msg;
 			//diag_log _msg;
+		};	
+		if (processItem) then
+		{
+			if (GRG_addIttemsMissingFromPricelistOnly) then
+			{
+				if(GRG_mod isEqualTo "Exile") then
+				{
+					if (isNumber (missionConfigFile >> "CfgExileArsenal" >> _x >> "price")) then
+					{
+						diag_log format["price for item %1 = %2 tabs",_x,getNumber(missionConfigFile >> "CfgExileArsenal" >> _x >> "price")];
+						processItem = false; // Item already listed and assumed to be included in both trader lists and price lists
+						diag_log format["Item %1 already has a price: Not processing item %1",_x];
+					} else {
+						diag_log format["price for item %1 = %2 tabs",_x,getNumber(missionConfigFile >> "CfgExileArsenal" >> _x >> "price")];
+						diag_log format["Item %1 has no price: processing item %1",_x];
+						processItem = true;
+					};
+				};
+				if (GRG_mod isEqualTo "Epoch") then
+				{
+					if (isNumber (missionConfigFile >> "CfgPricing" >> _x >> "price")) then
+					{
+						processItem = false; // Item already listed and assumed to be included in both trader lists and price lists
+						
+					} else {
+						processItem = true;
+					};
+				};
+			};	
 		};		
-		if ( !(_x in _baseItems) && _process) then
+		if ( !(_x in _baseItems) && processItem) then
 		{
 			_baseItems pushBack _x;
 			systemChat format["classname = %1, _itemType [0] = %2 _itemType[1] = %3",_x, _itemType select 0, _itemType select 1];		

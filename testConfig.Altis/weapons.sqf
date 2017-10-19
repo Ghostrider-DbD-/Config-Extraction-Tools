@@ -8,6 +8,7 @@
 
 	http://creativecommons.org/licenses/by-nc-sa/4.0/	
 */
+private["_process"];
 _weaponsBase = [];
 _knownWeapons = [];
 #include "ExcludedClassNames\excludedWeapons.sqf"
@@ -34,14 +35,17 @@ _wpnOptics = [];
 _wpnPointers = [];
 _wpnMuzzles = [];
 _baseClasses = [];
-_process = false;
+processWeapon = false;
 _wpList = (configFile >> "cfgWeapons") call BIS_fnc_getCfgSubClasses;
 //_wpList sort true;
+diag_log"//////////////////////////////////////////////////////////////";
+diag_log" ///   START OF RUN //////////////////////////////////////////";
+
 {
 	_item = _x;
 	_isWeap = false;
 	_isWeapon = false;
-	_process = false;
+	processWeapon = false;
 	{
 		_isWeapon = (_item isKindOF [_x, configFile >> "CfgWeapons"]);
 		if (_isWeapon) exitWith {};
@@ -49,28 +53,56 @@ _wpList = (configFile >> "cfgWeapons") call BIS_fnc_getCfgSubClasses;
 	
 	if (_isWeapon && GRG_Root isEqualTo "") then 
 	{
-		_process = true;
+		processWeapon = true;
 	};
 	if (_isWeapon && (count GRG_Root > 0)) then
 	{
 		_leftSTR = [toLower _x,count GRG_Root] call KRON_StrLeft;
-		_process = ((toLower GRG_Root) isEqualTo _leftSTR);
-		//_msg = format["weaponss.sqf:: _leftSTR = %1 and _process = %2",_leftSTR, _process];
+		processWeapon = ((toLower GRG_Root) isEqualTo _leftSTR);
+		_msg = format["weapons.sqf:: _leftSTR = %1 and processWeapon = %2",_leftSTR, processWeapon];
 		//systemChat _msg;
-		//diag_log _msg;
+		diag_log _msg;
 	};
-	
-	if (_isWeapon  && _process) then
+	if (_isWeapon && processWeapon) then
+	{
+		if (GRG_addIttemsMissingFromPricelistOnly) then
+		{
+			if(GRG_mod isEqualTo "Exile") then
+			{
+				if (isNumber (missionConfigFile >> "CfgExileArsenal" >> _x >> "price")) then
+				{
+					diag_log format["price for item %1 = %2 tabs",_x,getNumber(missionConfigFile >> "CfgExileArsenal" >> _x >> "price")];
+					processWeapon = false; // Item already listed and assumed to be included in both trader lists and price lists
+					diag_log format["Item %1 already has a price: Not processing item %1",_x];
+				} else {
+					diag_log format["price for item %1 = %2 tabs",_x,getNumber(missionConfigFile >> "CfgExileArsenal" >> _x >> "price")];
+					diag_log format["Item %1 has no price: processing item %1",_x];
+					processWeapon = true;
+				};
+			};
+			if (GRG_mod isEqualTo "Epoch") then
+			{
+				if (isNumber (missionConfigFile >> "CfgPricing" >> _x >> "price")) then
+				{
+					processWeapon = false; // Item already listed and assumed to be included in both trader lists and price lists
+					
+				} else {
+					processWeapon = true;
+				};
+			};
+		};	
+	};
+	if (_isWeapon  && processWeapon) then
 	{
 		if ([toLower _x,"base"] call KRON_StrInStr || [toLower _x,"abstract"] call KRON_StrInStr) then
 		{
 			if !(_x in _baseClasses) then {_baseClasses pushBack _x};
-			_process = false;
+			processWeapon = false;
 			systemChat format["base class %1 ignored",_x];
 		};			
 	};
-	
-	if (_isWeapon && _process) then 
+	diag_log format["for item %1, price of %2, root of %3, processWeapon = %4",_x, getNumber(missionConfigFile >> "CfgExileArsenal" >> _x >> "price"),[toLower _x,count GRG_Root] call KRON_StrLeft,processWeapon];
+	if (_isWeapon && processWeapon) then 
 	{
 		//_msg = format["weapons classname extractor:  _item = %1",_item];
 		//diag_log _msg;
