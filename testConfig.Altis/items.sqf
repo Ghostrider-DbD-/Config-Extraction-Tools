@@ -86,48 +86,46 @@
 	Returns:
 	ARRAY in format [category,type]
 */
-_excludedWearables = [];
-#include "ExcludedClassNames\excludedWearables.sqf"
+_baseItems = [];
 _baseClasses = [];
-_allBannedWearables = [];
-_uniforms = [];
-_headgear = []; 
-_glasses = []; 
-_masks = []; 
-_backpacks = []; 
-_vests = [];
-_goggles = []; 
-_NVG = []; 
-
-_wearablesList = (configFile >> "cfgWeapons") call BIS_fnc_getCfgSubClasses;
-_temp = (configFile >> "cfgVehicles") call BIS_fnc_getCfgSubClasses;
-_wearablesList = _wearablesList + _temp;
-_temp = (configFile >> "CfgGlasses") call BIS_fnc_getCfgSubClasses;
-_wearablesList = _wearablesList + _temp;
-_wearablesList sort true;
+_mines = [];
+_lasers = [];
+_items = [];
+_allItemTypes = ["Equipment"];
+_excludedItemTypes = [
+			"AccessoryMuzzle",
+			"AccessoryPointer",
+			"AccessorySights",
+            "AccessoryBipod"
+];
+_addedBaseNames = [];
+_itemsList = (configFile >> "cfgWeapons") call BIS_fnc_getCfgSubClasses;
+_temp = (configfile >> "CfgMagazines") call BIS_fnc_getCfgSubClasses;
+_itemsList = _itemsList + _temp;
+//_wearablesList sort true;
 {
 	_itemType = _x call BIS_fnc_itemType;
-	//diag_log format["for Item %1 its ItemType [0] is %2",_x,_itemType select 0];
-	if (_itemType select 0 isEqualTo "Equipment") then
+	diag_log format["for Item %1 its ItemType [0] is %2",_x,_itemType select 0];
+	if ((_itemType select 0) in _allItemTypes) then
 	{
-		processWearable = true;
+		processItem = true;
 		if (GRG_Root isEqualTo "") then 
 		{
-			processWearable = true;
+			processItem = true;
 		} else {
 			_leftSTR = [toLower _x,count GRG_Root] call KRON_StrLeft;
-			processWearable = ((toLower GRG_Root) isEqualTo _leftSTR);
-			//systemChat format["wearables.sqf:: _leftSTR = %1 and processWearable = %2",_leftSTR, processWearable];		
+			processItem = ((toLower GRG_Root) isEqualTo _leftSTR);
+			//systemChat format["wearables.sqf:: _leftSTR = %1 and processItem = %2",_leftSTR, processItem];		
 		};
 		if ([toLower _x,"base"] call KRON_StrInStr || [toLower _x,"abstract"] call KRON_StrInStr) then
 		{
 			if !(_x in _baseClasses) then {_baseClasses pushBack _x};
-			processWearable = false;
+			processItem = false;
 			_msg = format["base class %1 ignored",_x];
 			systemChat _msg;
 			//diag_log _msg;
 		};	
-		if (processWearable) then
+		if (processItem) then
 		{
 			if (GRG_addIttemsMissingFromPricelistOnly) then
 			{
@@ -136,48 +134,35 @@ _wearablesList sort true;
 					if (isNumber (missionConfigFile >> "CfgExileArsenal" >> _x >> "price")) then
 					{
 						diag_log format["price for item %1 = %2 tabs",_x,getNumber(missionConfigFile >> "CfgExileArsenal" >> _x >> "price")];
-						processWearable = false; // Item already listed and assumed to be included in both trader lists and price lists
+						processItem = false; // Item already listed and assumed to be included in both trader lists and price lists
 						diag_log format["Item %1 already has a price: Not processing item %1",_x];
 					} else {
 						diag_log format["price for item %1 = %2 tabs",_x,getNumber(missionConfigFile >> "CfgExileArsenal" >> _x >> "price")];
 						diag_log format["Item %1 has no price: processing item %1",_x];
-						processWearable = true;
+						processItem = true;
 					};
 				};
 				if (GRG_mod isEqualTo "Epoch") then
 				{
 					if (isNumber (missionConfigFile >> "CfgPricing" >> _x >> "price")) then
 					{
-						processWearable = false; // Item already listed and assumed to be included in both trader lists and price lists
+						processItem = false; // Item already listed and assumed to be included in both trader lists and price lists
 						
 					} else {
-						processWearable = true;
+						processItem = true;
 					};
 				};
 			};	
-		};			
-		if ( !(_x in _excludedWearables) && processWearable) then
-		{	
-			_excludedWearables pushBack _x;
-
-				systemChat format["classname = %1, _itemType = %2",_x, _itemType select 1];		
-				// Uniforms
-				if (_itemType select 1 isEqualTo "Uniform") then {_uniforms pushBack _x};
-				// Headgear / Masks
-				//if ( (_x isKindOF ["HelmetBase", configFile >> "CfgWeapons"]) or (_x isKindOF ["H_HelmetB", configFile >> "CfgWeapons"]) ) then {_headgear pushBack _x};
-				if (_itemType select 1 isEqualTo "Headgear") then {_headgear pushBack _x};				
-				
-				//if (_x isKindOF ["GoggleItem", configFile >> "CfgWeapons"]) then {_goggles pushBack _x};
-				if (_itemType select 1 isEqualTo "Glasses") then {_glasses pushBack _x};
-				// Vests
-				//if ( (_x isKindOF ["Vest_Camo_Base", configFile >> "CfgWeapons"]) or (_x isKindOF ["Vest_NoCamo_Base", configFile >> "CfgWeapons"]) ) then {_vests pushBack _x};
-				if (_itemType select 1 isEqualTo "Vest") then {_vests pushBack _x};
-				// Backpacks	
-				//if (_x isKindOF ["Bag_Base", configFile >> "CfgVehicles"]) then {_backpacks pushBack _x};
-				if (_itemType select 1 isEqualTo "Backpack") then {_backpacks pushBack _x};
+		};		
+		if ( !(_x in _baseItems) && processItem) then
+		{
+			_baseItems pushBack _x;
+			systemChat format["classname = %1, _itemType [0] = %2 _itemType[1] = %3",_x, _itemType select 0, _itemType select 1];		
+			if (_itemType select 0 isEqualTo "Mine" && !(_itemType select 1 in _excludedItemTypes)) then {_mines pushBack _x};
+			if (_itemType select 0 isEqualTo "Item" && !(_itemType select 1 in _excludedItemTypes)) then {_items pushBack _x};
 		};
 	};
-} foreach _wearablesList;
+} foreach _itemsList;
 
 _clipBoard = "";
 
@@ -195,11 +180,9 @@ if (GRG_mod == "Epoch") then
 	_clipBoard = _clipBoard + _temp;
 } foreach
 [
-	["Uniforms",_uniforms],
-	["Headgear",_headgear],
-	["Vests",_vests],
-	["Backpacks",_backpacks],
-	["Glasses",_glasses]
+	["Mines",_mines],
+	["Lasers",_lasers],
+	["Items",_items]
 ];
 
 if (GRG_mod == "Exile") then 
@@ -217,11 +200,9 @@ if (GRG_mod == "Epoch") then
 	_clipBoard = _clipBoard + _temp;
 } foreach
 [
-	["Uniforms",_uniforms],
-	["Headgear",_headgear],
-	["Vests",_vests],
-	["Backpacks",_backpacks],
-	["Glasses",_glasses]
+	["Mines",_mines],
+	["Lasers",_lasers],
+	["Items",_items]
 ];
 
 if (GRG_mod == "Exile") then 
@@ -238,12 +219,10 @@ if (GRG_mod == "Epoch") then
 	_clipBoard = _clipBoard + _temp;
 } foreach
 [
-	["Uniforms",_uniforms],
-	["Headgear",_headgear],
-	["Vests",_vests],
-	["Backpacks",_backpacks],
-	["Glasses",_glasses]
+	["Mines",_mines],
+	["Lasers",_lasers],
+	["Items",_items]
 ];
 copyToClipboard _clipBoard;
-systemChat "All wearables Processed and results copied to clipboard";
+systemChat "All items Processed and results copied to clipboard";
 hint format["Wearables Config Extractor Run complete%1Output copied to clipboard%1Paste it into a text editor to acces",endl];

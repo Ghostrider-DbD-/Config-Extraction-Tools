@@ -2,16 +2,17 @@
 	Class Name Extraction Tool
 	By GhostriderDbD
 	For Arma 3
-	7/20/17
+
 	All the code and information provided here is provided under an Attribution Non-Commercial ShareAlike 4.0 Commons License.
 
 	http://creativecommons.org/licenses/by-nc-sa/4.0/		
 */
 
 _baseMagazines = [];
-#include "ExcludedClassNames\baseMagazines.sqf"
+_excludedMagazines = [];
+#include "ExcludedClassNames\excludedMagazines.sqf"
 _cfgMagazines = (configfile >> "CfgMagazines") call BIS_fnc_getCfgSubClasses;
-//_cfgMagazines sort true;
+_cfgMagazines sort true;
 _sortedMagazines = [];
 _clipboard = "";
 _wpnSmokeShell = [];  //  "B_IR_Grenade"
@@ -25,12 +26,57 @@ _scannedMags = [];
 {
 	//diag_log format["Magazine = %1",_x];
 	_isKindOf = (_x isKindOF ["CA_Magazine", configFile >> "CfgMagazines"]); 
-	if (true) then
+	if (_isKindOf) then
 	{
-		//diag_log format["Acceptable Magazine = %1",_x];
-		if (_isKindOf and !(_x in _baseMagazines)) then
+		processMagazine = true;
+		if (GRG_Root isEqualTo "") then 
 		{
-			//diag_log format["Evaluated Magazine = %1",_x];
+			processMagazine = true;
+		} else {
+			_leftSTR = [toLower _x,count GRG_Root] call KRON_StrLeft;
+			processMagazine = ((toLower GRG_Root) isEqualTo _leftSTR);
+			//systemChat format["wearables.sqf:: _leftSTR = %1 and processMagazine = %2",_leftSTR, processMagazine];		
+		};
+		if ([toLower _x,"base"] call KRON_StrInStr || [toLower _x,"abstract"] call KRON_StrInStr) then
+		{
+			if !(_x in _excludedMagazines) then {_excludedMagazines pushBack _x};
+			processMagazine = false;
+			_msg = format["base class %1 ignored",_x];
+			systemChat _msg;
+			//diag_log _msg;
+		};	
+		if (processWearable) then
+		{
+			if (GRG_addIttemsMissingFromPricelistOnly) then
+			{
+				if(GRG_mod isEqualTo "Exile") then
+				{
+					if (isNumber (missionConfigFile >> "CfgExileArsenal" >> _x >> "price")) then
+					{
+						diag_log format["price for item %1 = %2 tabs",_x,getNumber(missionConfigFile >> "CfgExileArsenal" >> _x >> "price")];
+						processWearable = false; // Item already listed and assumed to be included in both trader lists and price lists
+						diag_log format["Item %1 already has a price: Not processing item %1",_x];
+					} else {
+						diag_log format["price for item %1 = %2 tabs",_x,getNumber(missionConfigFile >> "CfgExileArsenal" >> _x >> "price")];
+						diag_log format["Item %1 has no price: processing item %1",_x];
+						processWearable = true;
+					};
+				};
+				if (GRG_mod isEqualTo "Epoch") then
+				{
+					if (isNumber (missionConfigFile >> "CfgPricing" >> _x >> "price")) then
+					{
+						processWearable = false; // Item already listed and assumed to be included in both trader lists and price lists
+						
+					} else {
+						processWearable = true;
+					};
+				};
+			};	
+		};		
+		if (processMagazine && !(_x in _baseMagazines)) then
+		{
+			systemChat format["Evaluated Magazine = %1",_x];
 			//if (!(_x isKindOF ["CA_LauncherMagazine", configFile >> "CfgMagazines"]) && !(_x isKindOF ["HandGrenade", configFile >> "CfgMagazines"]) && !(_x isKindOf ["VehicleMagazine", configFile >> "CfgMagazines"]) && !(_x isKindOf ["Exile_AbstractItem", configFile >> "CfgMagazines"])) then {_wpnMagazines pushBack _x};
 			if (_x isKindOF ["CA_LauncherMagazine", configFile >> "CfgMagazines"]) then {_wpnLauncherRound pushBack _x; _scannedMags pushBack _x;};
 			if(_x isKindOF ["HandGrenade", configFile >> "CfgMagazines"]) then {_wpnSmokeShell pushBack _x; _scannedMags pushBack _x;};
@@ -98,5 +144,5 @@ _temp = [_wpnVehicleAmmo] call fn_generateLootTableEntries;
 _clipBoard = _clipBoard + _temp;
 
 copyToClipboard _clipboard;
-
+systemChat "All magazines Processed and results copied to clipboard";
 hint format["Special Magazines Config Extractor Run complete%1Output copied to clipboard%1Paste it into a text editor to acces",endl];

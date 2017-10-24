@@ -8,9 +8,88 @@
 
 	http://creativecommons.org/licenses/by-nc-sa/4.0/	
 */
+/*
+
+	Description:
+	Return item category and type. Recognized types are:
+
+		Weapon / VehicleWeapon
+			AssaultRifle
+			BombLauncher
+			Cannon
+			GrenadeLauncher
+			Handgun
+			Launcher
+			MachineGun
+			Magazine
+			MissileLauncher
+			Mortar
+			RocketLauncher
+			Shotgun
+			Throw
+			Rifle
+			SubmachineGun
+			SniperRifle
+		VehicleWeapon
+			Horn
+			CounterMeasuresLauncher
+			LaserDesignator
+		Item
+			AccessoryMuzzle
+			AccessoryPointer
+			AccessorySights
+            AccessoryBipod
+			Binocular
+			Compass
+			FirstAidKit
+			GPS
+			LaserDesignator
+			Map
+			Medikit
+			MineDetector
+			NVGoggles
+			Radio
+			Toolkit
+			UAVTerminal
+			VehicleWeapon
+			Unknown
+			UnknownEquipment
+			UnknownWeapon
+			Watch
+		Equipment
+			Glasses
+			Headgear
+			Vest
+			Uniform
+			Backpack
+		Magazine
+			Artillery
+			Bullet
+			CounterMeasures
+			Flare
+			Grenade
+			Laser
+			Missile
+			Rocket
+			Shell
+			ShotgunShell
+			SmokeShell
+			UnknownMagazine
+		Mine
+			Mine
+			MineBounding
+			MineDirectional
+
+	Parameter(s):
+		0: STRING - item class
+
+	Returns:
+	ARRAY in format [category,type]
+*/
+private["_process"];
 _weaponsBase = [];
 _knownWeapons = [];
-#include "ExcludedClassNames\baseWeapons.sqf"
+#include "ExcludedClassNames\excludedWeapons.sqf"
 
 
 _allWeaponRoots = ["Pistol","Rifle","Launcher"];
@@ -33,28 +112,127 @@ _wpnMagazines = [];
 _wpnOptics = [];
 _wpnPointers = [];
 _wpnMuzzles = [];
-
-_aBaseNames = [];
+_baseClasses = [];
+processWeapon = false;
+processAttachment = false;
 _wpList = (configFile >> "cfgWeapons") call BIS_fnc_getCfgSubClasses;
 //_wpList sort true;
+diag_log"//////////////////////////////////////////////////////////////";
+diag_log" ///   START OF RUN //////////////////////////////////////////";
+
 {
 	_item = _x;
 	_isWeap = false;
-	_isKindOf = false;
+	_isWeapon = false;
+	processWeapon = false;
+	
 	{
-		_isKindOf = (_item isKindOF [_x, configFile >> "CfgWeapons"]);
-		if (_isKindOf) exitWith {};
+		_isWeapon = (_item isKindOF [_x, configFile >> "CfgWeapons"]);
+		if (_isWeapon) exitWith {processWeapon = true};
 	} forEach _allWeaponRoots;
-	if (_isKindOf) then
+
+	if (processWeapon && (count GRG_Root > 0)) then
 	{
-		//if (getnumber (configFile >> "cfgWeapons" >> _x >> "scope") == 2) then {
+		_leftSTR = [toLower _x,count GRG_Root] call KRON_StrLeft;
+		processWeapon = ((toLower GRG_Root) isEqualTo _leftSTR);
+		_msg = format["weapons.sqf:: _leftSTR = %1 and processWeapon = %2",_leftSTR, processWeapon];
+		//systemChat _msg;
+		diag_log _msg;
+	};
+	if (processWeapon) then
+	{
+		if (GRG_addIttemsMissingFromPricelistOnly) then
+		{
+			if(GRG_mod isEqualTo "Exile") then
+			{
+				if (isNumber (missionConfigFile >> "CfgExileArsenal" >> _x >> "price")) then
+				{
+					diag_log format["price for item %1 = %2 tabs",_x,getNumber(missionConfigFile >> "CfgExileArsenal" >> _x >> "price")];
+					processWeapon = false; // Item already listed and assumed to be included in both trader lists and price lists
+					diag_log format["Item %1 already has a price: Not processing item %1",_x];
+				} else {
+					diag_log format["price for item %1 = %2 tabs",_x,getNumber(missionConfigFile >> "CfgExileArsenal" >> _x >> "price")];
+					diag_log format["Item %1 has no price: processing item %1",_x];
+					processWeapon = true;
+				};
+			};
+			if (GRG_mod isEqualTo "Epoch") then
+			{
+				if (isNumber (missionConfigFile >> "CfgPricing" >> _x >> "price")) then
+				{
+					processWeapon = false; // Item already listed and assumed to be included in both trader lists and price lists
+					
+				} else {
+					processWeapon = true;
+				};
+			};
+		};	
+	};
+	if (processWeapon) then
+	{
+		if ([toLower _x,"base"] call KRON_StrInStr || [toLower _x,"abstract"] call KRON_StrInStr) then
+		{
+			if !(_x in _baseClasses) then {_baseClasses pushBack _x};
+			processWeapon = false;
+			systemChat format["base class %1 ignored",_x];
+		};			
+	};
+	diag_log format["for item %1, price of %2, root of %3, processWeapon = %4",_x, getNumber(missionConfigFile >> "CfgExileArsenal" >> _x >> "price"),[toLower _x,count GRG_Root] call KRON_StrLeft,processWeapon];
+
+	_fn_includeItem = {
+		params["_item"];
+		private _include = false;
+		private _leftSTR = [toLower _item,count GRG_Root] call KRON_StrLeft;
+		if (count GRG_Root > 0) then {_include = ((toLower GRG_Root) isEqualTo _leftSTR);};
+		if (_include) then
+		{
+			if (GRG_addIttemsMissingFromPricelistOnly) then
+			{
+				if(GRG_mod isEqualTo "Exile") then
+				{
+					if (isNumber (missionConfigFile >> "CfgExileArsenal" >> _item >> "price")) then
+					{
+						diag_log format["price for item %1 = %2 tabs",_item,getNumber(missionConfigFile >> "CfgExileArsenal" >> _item >> "price")];
+						_include = false; // Item already listed and assumed to be included in both trader lists and price lists
+						diag_log format["Item %1 already has a price: Not processing item %1",_item];
+					} else {
+						diag_log format["price for item %1 = %2 tabs",_item,getNumber(missionConfigFile >> "CfgExileArsenal" >> _item >> "price")];
+						diag_log format["Item %1 has no price: processing item %1",_item];
+						_include = true;
+					};
+				};
+				if (GRG_mod isEqualTo "Epoch") then
+				{
+					if (isNumber (missionConfigFile >> "CfgPricing" >> _item >> "price")) then
+					{
+						_include = false; // Item already listed and assumed to be included in both trader lists and price lists
+						
+					} else {
+						_include = true;
+					};
+				};
+			};		
+		};
+		_include
+	};
+
+	if (processWeapon) then 
+	{
+		//_msg = format["weapons classname extractor:  _item = %1",_item];
+		//diag_log _msg;
+		//systemChat _msg;
+		if !(_item in _excludedWeapons) then
+		{
+			_excludedWeapons pushBack _item;
 			_itemType = _x call bis_fnc_itemType;
 			_itemCategory = _itemType select 1;
 			//diag_log format["pullWepClassNames::  _itemType = %1 || _itemCategory = %2",_itemType, _itemCategory];
-			if (((_itemType select 0) == "Weapon") && ((_itemType select 1) in _allWeaponTypes)) then {
+			if (((_itemType select 0) == "Weapon") && ((_itemType select 1) in _allWeaponTypes)) then 
+			{
 				_baseName = _x call BIS_fnc_baseWeapon;
-				//diag_log format["pullWepClassNames:: Processing for _baseName %3 || _itemType = %1 || _itemCategory = %2",_itemType, _itemCategory, _baseName];
-				if (!(_baseName in _addedBaseNames) && !(_baseName in _allBannedWeapons)) then {
+				systemChat format["pullWepClassNames:: Processing for _baseName %3 || _itemType = %1 || _itemCategory = %2",_itemType, _itemCategory, _baseName];
+				if (!(_baseName in _addedBaseNames) && !(_baseName in _allBannedWeapons)) then 
+				{
 					_addedBaseNames pushBack _baseName;
 					
 					switch(_itemCategory)do{
@@ -77,26 +255,27 @@ _wpList = (configFile >> "cfgWeapons") call BIS_fnc_getCfgSubClasses;
 					//  Get options for magazines and attachments for that weapon and store these if they are not duplicates for items already listed.
 					_ammoChoices = getArray (configFile >> "CfgWeapons" >> _baseName >> "magazines");
 					{
-						if !(_x in _wpnMagazines) then {_wpnMagazines pushback _x};
+						if ([_x] call _fn_includeItem && !(_x in _wpnMagazines)) then {_wpnMagazines pushback _x};
 					}forEach _ammoChoices;
 					_optics = getArray (configfile >> "CfgWeapons" >> _baseName >> "WeaponSlotsInfo" >> "CowsSlot" >> "compatibleItems");
 					{
-						if !(_x in _wpnOptics) then {_wpnOptics pushback _x};
+						if ([_x] call _fn_includeItem && !(_x in _wpnOptics)) then {_wpnOptics pushback _x};
 					}forEach _optics;
 					_pointers = getArray (configFile >> "CfgWeapons" >> _baseName >> "WeaponSlotsInfo" >> "PointerSlot" >> "compatibleItems");
 					{
-						if !(_x in _wpnPointers) then {_wpnPointers pushback _x};
+						if ([_x] call _fn_includeItem && !(_x in _wpnPointers)) then {_wpnPointers pushback _x};
 					}forEach _pointers;
 					_muzzles = getArray (configFile >> "CfgWeapons" >> _baseName >> "WeaponSlotsInfo" >> "MuzzleSlot" >> "compatibleItems");
 					{
-						if !(_x in _wpnMuzzles) then {_wpnMuzzles pushback _x};
+						if ([_x] call _fn_includeItem && !(_x in _wpnMuzzles)) then {_wpnMuzzles pushback _x};
 					}forEach _muzzles;
 					_underbarrel = getArray (configFile >> "CfgWeapons" >> _baseName >> "WeaponSlotsInfo" >> "UnderBarrelSlot" >> "compatibleItems");
 					{
-						if !(_x in _wpnUnderbarrel) then {_wpnUnderbarrel pushback _x};
+						if ([_x] call _fn_includeItem && !(_x in _wpnUnderbarrel)) then {_wpnUnderbarrel pushback _x};
 					}forEach _underbarrel;
 				};
 			};
+		};
 	};
 } foreach _wpList;
 
@@ -111,69 +290,29 @@ if (GRG_mod == "Epoch") then
 	_clipboard = _clipBoard + GRG_Epoch_ItemLists_Header;
 };
 
-_clipboard = _clipboard + format["%2%3// // Assault Rifles %1",endl,endl,endl];
-_temp = [_wpnAR] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Assault Rifles with GL %1",endl,endl,endl];
-_temp = [_wpnARG] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// LMGs %1",endl,endl,endl];
-_temp = [_wpnLMG] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// SMGs %1",endl,endl,endl];
-_temp = [_wpnSMG] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Snipers %1",endl,endl,endl];
-_temp = [_wpnSniper] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// DMRs %1",endl,endl,endl];
-_temp = [_wpnDMR] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Launchers %1",endl,endl,endl];
-_temp = [_wpnLauncher] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Handguns %1",endl,endl,endl];
-_temp = [_wpnHandGun] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Shotguns %1",endl,endl,endl];
-_temp = [_wpnShotGun] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Throwables %1",endl,endl,endl];
-_temp = [_wpnThrow] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Unknown %1",endl,endl,endl];
-_temp = [_wpnUnknown] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Magazines %1",endl,endl,endl];
-_temp = [_wpnMagazines] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Optics %1",endl,endl,endl];
-_temp = [_wpnOptics] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Muzzles %1",endl,endl,endl];
-_temp = [_wpnMuzzles] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Pointers %1",endl,endl,endl];
-_temp = [_wpnPointers] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Underbarrel %1",endl,endl,endl];
-_temp = [_wpnUnderbarrel] call fn_generateItemList;
-_clipBoard = _clipBoard + _temp;
+{
+	_clipboard = _clipboard + format["%2%2// %1 %2%2",_x select 0, endl];
+	_temp = [_x select 1] call fn_generateItemList;
+	_clipBoard = _clipBoard + _temp;
+} foreach
+[
+	["Assault Rifles ",_wpnAR],
+	["Assault Rifles with GL",_wpnARG],
+	["LMGs",_wpnLMG],
+	[" SMGs ",_wpnSMG],
+	["Snipers ",_wpnSniper],
+	["DMRs ",_wpnDMR],	
+	["Launchers ",_wpnLauncher],	
+	["Handguns ",_wpnHandGun],	
+	["Shotguns ",_wpnShotGun],	
+	["Throwables ",_wpnThrow],	
+	["Magazines ",_wpnMagazines],	
+	["Optics ",_wpnOptics],	
+	["Muzzles ",_wpnMuzzles],	
+	["Pointers ",_wpnPointers],	
+	["Underbarrel ",_wpnUnderbarrel],	
+	["Unknown ",_wpnUnknown]
+];
 
 if (GRG_mod == "Exile") then 
 {
@@ -183,71 +322,29 @@ if (GRG_mod == "Epoch") then
 {
 	_clipboard = _clipBoard + GRG_Epoch_Pricelist_Header;
 };
-
-_clipboard = _clipboard + format["%2%3// // Assault Rifles %1",endl,endl,endl];
-_temp = [_wpnAR] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Assault Rifles with GL %1",endl,endl,endl];
-_temp = [_wpnARG] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// LMGs %1",endl,endl,endl];
-_temp = [_wpnLMG] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// SMGs %1",endl,endl,endl];
-_temp = [_wpnSMG] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Snipers %1",endl,endl,endl];
-_temp = [_wpnSniper] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// DMRs %1",endl,endl,endl];
-_temp = [_wpnDMR] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Launchers %1",endl,endl,endl];
-_temp = [_wpnLauncher] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Handguns %1",endl,endl,endl];
-_temp = [_wpnHandGun] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Shotguns %1",endl,endl,endl];
-_temp = [_wpnShotGun] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Throwables %1",endl,endl,endl];
-_temp = [_wpnThrow] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Unknown %1",endl,endl,endl];
-_temp = [_wpnUnknown] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Magazines %1",endl,endl,endl];
-_temp = [_wpnMagazines] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Optics %1",endl,endl,endl];
-_temp = [_wpnOptics] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Muzzles %1",endl,endl,endl];
-_temp = [_wpnMuzzles] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Pointers %1",endl,endl,endl];
-_temp = [_wpnPointers] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Underbarrel %1",endl,endl,endl];
-_temp = [_wpnUnderbarrel] call fn_generatePriceList;
-_clipBoard = _clipBoard + _temp;
-
+{
+	_clipboard = _clipboard + format["%2%2// %1 %2%2",_x select 0, endl];
+	_temp = [_x select 1] call fn_generatePriceList;
+	_clipBoard = _clipBoard + _temp;
+} foreach
+[
+	["Assault Rifles ",_wpnAR],
+	["Assault Rifles with GL",_wpnARG],
+	["LMGs",_wpnLMG],
+	[" SMGs ",_wpnSMG],
+	["Snipers ",_wpnSniper],
+	["DMRs ",_wpnDMR],	
+	["Launchers ",_wpnLauncher],	
+	["Handguns ",_wpnHandGun],	
+	["Shotguns ",_wpnShotGun],	
+	["Throwables ",_wpnThrow],	
+	["Magazines ",_wpnMagazines],	
+	["Optics ",_wpnOptics],	
+	["Muzzles ",_wpnMuzzles],	
+	["Pointers ",_wpnPointers],	
+	["Underbarrel ",_wpnUnderbarrel],	
+	["Unknown ",_wpnUnknown]
+];
 
 if (GRG_mod == "Exile") then 
 {
@@ -257,71 +354,29 @@ if (GRG_mod == "Epoch") then
 {
 	_clipboard = _clipBoard + GRG_Epoch_Loottable_Header;
 };
-
-_clipboard = _clipboard + format["%2%3// // Assault Rifles %1",endl,endl,endl];
-_temp = [_wpnAR] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Assault Rifles with GL %1",endl,endl,endl];
-_temp = [_wpnARG] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// LMGs %1",endl,endl,endl];
-_temp = [_wpnLMG] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// SMGs %1",endl,endl,endl];
-_temp = [_wpnSMG] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Snipers %1",endl,endl,endl];
-_temp = [_wpnSniper] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// DMRs %1",endl,endl,endl];
-_temp = [_wpnDMR] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Launchers %1",endl,endl,endl];
-_temp = [_wpnLauncher] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Handguns %1",endl,endl,endl];
-_temp = [_wpnHandGun] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Shotguns %1",endl,endl,endl];
-_temp = [_wpnShotGun] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Throwables %1",endl,endl,endl];
-_temp = [_wpnThrow] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Unknown %1",endl,endl,endl];
-_temp = [_wpnUnknown] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Magazines %1",endl,endl,endl];
-_temp = [_wpnMagazines] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Optics %1",endl,endl,endl];
-_temp = [_wpnOptics] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Muzzles %1",endl,endl,endl];
-_temp = [_wpnMuzzles] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Pointers %1",endl,endl,endl];
-_temp = [_wpnPointers] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
-_clipboard = _clipboard + format["%2%3// Underbarrel %1",endl,endl,endl];
-_temp = [_wpnUnderbarrel] call fn_generateLootTableEntries;
-_clipBoard = _clipBoard + _temp;
-
+{
+	_clipboard = _clipboard + format["%2%2// %1 %2%2",_x select 0, endl];
+	_temp = [_x select 1] call fn_generateLootTableEntries;
+	_clipBoard = _clipBoard + _temp;
+} foreach
+[
+	["Assault Rifles ",_wpnAR],
+	["Assault Rifles with GL",_wpnARG],
+	["LMGs",_wpnLMG],
+	[" SMGs ",_wpnSMG],
+	["Snipers ",_wpnSniper],
+	["DMRs ",_wpnDMR],	
+	["Launchers ",_wpnLauncher],	
+	["Handguns ",_wpnHandGun],	
+	["Shotguns ",_wpnShotGun],	
+	["Throwables ",_wpnThrow],	
+	["Magazines ",_wpnMagazines],	
+	["Optics ",_wpnOptics],	
+	["Muzzles ",_wpnMuzzles],	
+	["Pointers ",_wpnPointers],	
+	["Underbarrel ",_wpnUnderbarrel],	
+	["Unknown ",_wpnUnknown]
+];
 copyToClipboard _clipBoard;
-
+systemChat "All Weapons Processws and results copied to clipboard";
 hint format["Weapons Config Extractor Run complete%1Output copied to clipboard%1Paste it into a text editor to acces",endl];
