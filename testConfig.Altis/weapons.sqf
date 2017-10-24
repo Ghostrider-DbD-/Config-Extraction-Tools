@@ -8,6 +8,84 @@
 
 	http://creativecommons.org/licenses/by-nc-sa/4.0/	
 */
+/*
+
+	Description:
+	Return item category and type. Recognized types are:
+
+		Weapon / VehicleWeapon
+			AssaultRifle
+			BombLauncher
+			Cannon
+			GrenadeLauncher
+			Handgun
+			Launcher
+			MachineGun
+			Magazine
+			MissileLauncher
+			Mortar
+			RocketLauncher
+			Shotgun
+			Throw
+			Rifle
+			SubmachineGun
+			SniperRifle
+		VehicleWeapon
+			Horn
+			CounterMeasuresLauncher
+			LaserDesignator
+		Item
+			AccessoryMuzzle
+			AccessoryPointer
+			AccessorySights
+            AccessoryBipod
+			Binocular
+			Compass
+			FirstAidKit
+			GPS
+			LaserDesignator
+			Map
+			Medikit
+			MineDetector
+			NVGoggles
+			Radio
+			Toolkit
+			UAVTerminal
+			VehicleWeapon
+			Unknown
+			UnknownEquipment
+			UnknownWeapon
+			Watch
+		Equipment
+			Glasses
+			Headgear
+			Vest
+			Uniform
+			Backpack
+		Magazine
+			Artillery
+			Bullet
+			CounterMeasures
+			Flare
+			Grenade
+			Laser
+			Missile
+			Rocket
+			Shell
+			ShotgunShell
+			SmokeShell
+			UnknownMagazine
+		Mine
+			Mine
+			MineBounding
+			MineDirectional
+
+	Parameter(s):
+		0: STRING - item class
+
+	Returns:
+	ARRAY in format [category,type]
+*/
 private["_process"];
 _weaponsBase = [];
 _knownWeapons = [];
@@ -36,6 +114,7 @@ _wpnPointers = [];
 _wpnMuzzles = [];
 _baseClasses = [];
 processWeapon = false;
+processAttachment = false;
 _wpList = (configFile >> "cfgWeapons") call BIS_fnc_getCfgSubClasses;
 //_wpList sort true;
 diag_log"//////////////////////////////////////////////////////////////";
@@ -46,16 +125,13 @@ diag_log" ///   START OF RUN //////////////////////////////////////////";
 	_isWeap = false;
 	_isWeapon = false;
 	processWeapon = false;
+	
 	{
 		_isWeapon = (_item isKindOF [_x, configFile >> "CfgWeapons"]);
-		if (_isWeapon) exitWith {};
+		if (_isWeapon) exitWith {processWeapon = true};
 	} forEach _allWeaponRoots;
-	
-	if (_isWeapon && GRG_Root isEqualTo "") then 
-	{
-		processWeapon = true;
-	};
-	if (_isWeapon && (count GRG_Root > 0)) then
+
+	if (processWeapon && (count GRG_Root > 0)) then
 	{
 		_leftSTR = [toLower _x,count GRG_Root] call KRON_StrLeft;
 		processWeapon = ((toLower GRG_Root) isEqualTo _leftSTR);
@@ -63,7 +139,7 @@ diag_log" ///   START OF RUN //////////////////////////////////////////";
 		//systemChat _msg;
 		diag_log _msg;
 	};
-	if (_isWeapon && processWeapon) then
+	if (processWeapon) then
 	{
 		if (GRG_addIttemsMissingFromPricelistOnly) then
 		{
@@ -92,7 +168,7 @@ diag_log" ///   START OF RUN //////////////////////////////////////////";
 			};
 		};	
 	};
-	if (_isWeapon  && processWeapon) then
+	if (processWeapon) then
 	{
 		if ([toLower _x,"base"] call KRON_StrInStr || [toLower _x,"abstract"] call KRON_StrInStr) then
 		{
@@ -102,7 +178,45 @@ diag_log" ///   START OF RUN //////////////////////////////////////////";
 		};			
 	};
 	diag_log format["for item %1, price of %2, root of %3, processWeapon = %4",_x, getNumber(missionConfigFile >> "CfgExileArsenal" >> _x >> "price"),[toLower _x,count GRG_Root] call KRON_StrLeft,processWeapon];
-	if (_isWeapon && processWeapon) then 
+
+	_fn_includeItem = {
+		params["_item"];
+		private _include = false;
+		private _leftSTR = [toLower _item,count GRG_Root] call KRON_StrLeft;
+		if (count GRG_Root > 0) then {_include = ((toLower GRG_Root) isEqualTo _leftSTR);};
+		if (_include) then
+		{
+			if (GRG_addIttemsMissingFromPricelistOnly) then
+			{
+				if(GRG_mod isEqualTo "Exile") then
+				{
+					if (isNumber (missionConfigFile >> "CfgExileArsenal" >> _item >> "price")) then
+					{
+						diag_log format["price for item %1 = %2 tabs",_item,getNumber(missionConfigFile >> "CfgExileArsenal" >> _item >> "price")];
+						_include = false; // Item already listed and assumed to be included in both trader lists and price lists
+						diag_log format["Item %1 already has a price: Not processing item %1",_item];
+					} else {
+						diag_log format["price for item %1 = %2 tabs",_item,getNumber(missionConfigFile >> "CfgExileArsenal" >> _item >> "price")];
+						diag_log format["Item %1 has no price: processing item %1",_item];
+						_include = true;
+					};
+				};
+				if (GRG_mod isEqualTo "Epoch") then
+				{
+					if (isNumber (missionConfigFile >> "CfgPricing" >> _item >> "price")) then
+					{
+						_include = false; // Item already listed and assumed to be included in both trader lists and price lists
+						
+					} else {
+						_include = true;
+					};
+				};
+			};		
+		};
+		_include
+	};
+
+	if (processWeapon) then 
 	{
 		//_msg = format["weapons classname extractor:  _item = %1",_item];
 		//diag_log _msg;
@@ -141,23 +255,23 @@ diag_log" ///   START OF RUN //////////////////////////////////////////";
 					//  Get options for magazines and attachments for that weapon and store these if they are not duplicates for items already listed.
 					_ammoChoices = getArray (configFile >> "CfgWeapons" >> _baseName >> "magazines");
 					{
-						if !(_x in _wpnMagazines) then {_wpnMagazines pushback _x};
+						if ([_x] call _fn_includeItem && !(_x in _wpnMagazines)) then {_wpnMagazines pushback _x};
 					}forEach _ammoChoices;
 					_optics = getArray (configfile >> "CfgWeapons" >> _baseName >> "WeaponSlotsInfo" >> "CowsSlot" >> "compatibleItems");
 					{
-						if !(_x in _wpnOptics) then {_wpnOptics pushback _x};
+						if ([_x] call _fn_includeItem && !(_x in _wpnOptics)) then {_wpnOptics pushback _x};
 					}forEach _optics;
 					_pointers = getArray (configFile >> "CfgWeapons" >> _baseName >> "WeaponSlotsInfo" >> "PointerSlot" >> "compatibleItems");
 					{
-						if !(_x in _wpnPointers) then {_wpnPointers pushback _x};
+						if ([_x] call _fn_includeItem && !(_x in _wpnPointers)) then {_wpnPointers pushback _x};
 					}forEach _pointers;
 					_muzzles = getArray (configFile >> "CfgWeapons" >> _baseName >> "WeaponSlotsInfo" >> "MuzzleSlot" >> "compatibleItems");
 					{
-						if !(_x in _wpnMuzzles) then {_wpnMuzzles pushback _x};
+						if ([_x] call _fn_includeItem && !(_x in _wpnMuzzles)) then {_wpnMuzzles pushback _x};
 					}forEach _muzzles;
 					_underbarrel = getArray (configFile >> "CfgWeapons" >> _baseName >> "WeaponSlotsInfo" >> "UnderBarrelSlot" >> "compatibleItems");
 					{
-						if !(_x in _wpnUnderbarrel) then {_wpnUnderbarrel pushback _x};
+						if ([_x] call _fn_includeItem && !(_x in _wpnUnderbarrel)) then {_wpnUnderbarrel pushback _x};
 					}forEach _underbarrel;
 				};
 			};
