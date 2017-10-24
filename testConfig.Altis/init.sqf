@@ -11,7 +11,8 @@
 // load string library
 //nul=[] execVM "KRON_Strings.sqf";
 GRG_mod = "Exile";  // Options are "Exile" or "Epoch".  This configuration pertains only to generating pre-formated price lists.
-GRG_Root = ""; // Scripts will test if the leftmost N characters of a classname are equal to GRG_Root
+GRG_Root = "CUP"; // Scripts will test if the leftmost N characters of a classname are equal to GRG_Root
+GRG_addIttemsMissingFromPricelistOnly = true;  // when true will process only class names for which there is not already a price listed for that mod time. for this to work you need to include the description.ext and any price lists for your server in this misison folder.
 GRG_includedWeaponMagazines = false;
 GRG_configuratorPathName = "ExcludedClassNames\";
 

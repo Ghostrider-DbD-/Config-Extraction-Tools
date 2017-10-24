@@ -20,31 +20,64 @@ _boats = [];
 _air = [];
 _helis = [];
 _planes = [];
-_process = true;
+processVehicle = true;
 _n = count _veh;
 _index = 0;
 _counter = 1;
 _interval = 25;
 systemChat "Classname Extraction tool for vehicles initialized";
 {
-	_process = true;
+	processVehicle = true;
 	if (GRG_Root isEqualTo "") then 
 	{
-		_process = true;
-	} else {
+		processVehicle = true;
+	};
+	if (count GRG_Root > 0) then
+	{
 		_leftSTR = [toLower _x,count GRG_Root] call KRON_StrLeft;
-		_process = ((toLower GRG_Root) isEqualTo _leftSTR);
-		//systemChat format["vehicles.sqf:: _leftSTR = %1 and _process = %2",_leftSTR, _process];		
+		processVehicle = ((toLower GRG_Root) isEqualTo _leftSTR);
+		_msg = format["vehicles.sqf:: _leftSTR = %1 and processVehicle = %2",_leftSTR, processVehicle];
+		//systemChat _msg;
+		diag_log _msg;
+	};
+	if (processVehicle) then
+	{
+		if (GRG_addIttemsMissingFromPricelistOnly) then
+		{
+			if(GRG_mod isEqualTo "Exile") then
+			{
+				if (isNumber (missionConfigFile >> "CfgExileArsenal" >> _x >> "price")) then
+				{
+					diag_log format["price for item %1 = %2 tabs",_x,getNumber(missionConfigFile >> "CfgExileArsenal" >> _x >> "price")];
+					processVehicle = false; // Item already listed and assumed to be included in both trader lists and price lists
+					diag_log format["Item %1 already has a price: Not processing item %1",_x];
+				} else {
+					diag_log format["price for item %1 = %2 tabs",_x,getNumber(missionConfigFile >> "CfgExileArsenal" >> _x >> "price")];
+					diag_log format["Item %1 has no price: processing item %1",_x];
+					processVehicle = true;
+				};
+			};
+			if (GRG_mod isEqualTo "Epoch") then
+			{
+				if (isNumber (missionConfigFile >> "CfgPricing" >> _x >> "price")) then
+				{
+					processVehicle = false; // Item already listed and assumed to be included in both trader lists and price lists
+					
+				} else {
+					processVehicle = true;
+				};
+			};
+		};	
 	};
 	if ([toLower _x,"base"] call KRON_StrInStr || [toLower _x,"abstract"] call KRON_StrInStr) then
 	{
 		if !(_x in _baseClasses) then {_baseClasses pushBack _x};
-		_process = false;
+		processVehicle = false;
 		_msg = format["base class %1 ignored",_x];
 		systemChat _msg;
 		//diag_log _msg;
 	};
-	if (_process && !(_x in _excludedVehicles)) then
+	if (processVehicle && !(_x in _excludedVehicles)) then
 	{
 		if (_index == 1) then 
 		{

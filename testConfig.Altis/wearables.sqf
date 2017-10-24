@@ -110,24 +110,53 @@ _wearablesList sort true;
 	//diag_log format["for Item %1 its ItemType [0] is %2",_x,_itemType select 0];
 	if (_itemType select 0 isEqualTo "Equipment") then
 	{
-		_process = true;
+		processWearable = true;
 		if (GRG_Root isEqualTo "") then 
 		{
-			_process = true;
+			processWearable = true;
 		} else {
 			_leftSTR = [toLower _x,count GRG_Root] call KRON_StrLeft;
-			_process = ((toLower GRG_Root) isEqualTo _leftSTR);
-			//systemChat format["wearables.sqf:: _leftSTR = %1 and _process = %2",_leftSTR, _process];		
+			processWearable = ((toLower GRG_Root) isEqualTo _leftSTR);
+			//systemChat format["wearables.sqf:: _leftSTR = %1 and processWearable = %2",_leftSTR, processWearable];		
 		};
 		if ([toLower _x,"base"] call KRON_StrInStr || [toLower _x,"abstract"] call KRON_StrInStr) then
 		{
 			if !(_x in _baseClasses) then {_baseClasses pushBack _x};
-			_process = false;
+			processWearable = false;
 			_msg = format["base class %1 ignored",_x];
 			systemChat _msg;
 			//diag_log _msg;
 		};	
-		if ( !(_x in _excludedWearables) && _process) then
+		if (processWearable) then
+		{
+			if (GRG_addIttemsMissingFromPricelistOnly) then
+			{
+				if(GRG_mod isEqualTo "Exile") then
+				{
+					if (isNumber (missionConfigFile >> "CfgExileArsenal" >> _x >> "price")) then
+					{
+						diag_log format["price for item %1 = %2 tabs",_x,getNumber(missionConfigFile >> "CfgExileArsenal" >> _x >> "price")];
+						processWearable = false; // Item already listed and assumed to be included in both trader lists and price lists
+						diag_log format["Item %1 already has a price: Not processing item %1",_x];
+					} else {
+						diag_log format["price for item %1 = %2 tabs",_x,getNumber(missionConfigFile >> "CfgExileArsenal" >> _x >> "price")];
+						diag_log format["Item %1 has no price: processing item %1",_x];
+						processWearable = true;
+					};
+				};
+				if (GRG_mod isEqualTo "Epoch") then
+				{
+					if (isNumber (missionConfigFile >> "CfgPricing" >> _x >> "price")) then
+					{
+						processWearable = false; // Item already listed and assumed to be included in both trader lists and price lists
+						
+					} else {
+						processWearable = true;
+					};
+				};
+			};	
+		};			
+		if ( !(_x in _excludedWearables) && processWearable) then
 		{	
 			_excludedWearables pushBack _x;
 
