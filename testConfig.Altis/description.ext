@@ -1,2 +1,9 @@
+// Include price lists here
 
-#include "config_altis_mil.cpp"
+// FOR EPOCH
+ #include "epoch_config\sandbox_config.hpp"
+// Be sure you copy epoch_configs for your current mission file and everything inside it into your testConfig.Altis mission folder.
+
+// FOR EXILE
+//#include "config.cpp"  // for exile - this file contains all aresnal entries and is used to check if an item is buyable/sellable in the traders.
+// Be sure you copy this file and any included files into this mission folder or the mission will not run.
